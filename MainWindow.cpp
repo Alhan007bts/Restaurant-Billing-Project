@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QDateTime>
