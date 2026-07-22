@@ -64,4 +64,5 @@ Restaura.da5b143d/
 
 # CMake build directory
 build/
+compile_commands.json
 
