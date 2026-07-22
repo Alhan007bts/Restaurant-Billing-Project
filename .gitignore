@@ -61,3 +61,7 @@ Restaura.da5b143d/
 # Database files
 *.db
 *.opendb
+
+# CMake build directory
+build/
+
