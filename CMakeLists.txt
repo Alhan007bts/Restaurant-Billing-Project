@@ -3,6 +3,7 @@ project(RestaurantBillingProject CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Enable automatic compilation of Qt Meta-Object Compiler (MOC), User Interface Compiler (UIC), and Resource Compiler (RCC)
 set(CMAKE_AUTOMOC ON)
