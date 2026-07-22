@@ -45,10 +45,19 @@ ARM64/
 Restaura.da5b143d/
 
 # MSBuild / Visual Studio project files
-*.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.slnx
 *.suo
 *.userosscache
 *.sln.docstates
 
+
 # Visual Studio Code files
 .vscode/
+
+# Database files
+*.db
+*.opendb
