@@ -6,29 +6,39 @@
 
 class MenuItem {
 private:
-	std::string itemID;
-	std::string name;
-	std::string category;
-	double price;
+	std::string itemID;		// unique identifier for the menu item
+	std::string name;		// display name of the menu item
+	std::string category;   // category classification: Appetizer, Main Course, Dessert, Beverage
+	double price;			// current price of the item in dollars
 
 protected:
 	// protected constuctor for the derived classes to use
-	MenuItem();
+	MenuItem(); // initializes all attributes to default values
 
 public:
-	// parameterized constructor
+	/*
+	 * parameterized constructor, creates a menu item with the specified attributes
+	 * All values are validated through setters before storing them.
+	 */
 	MenuItem(std::string id, std::string name, std::string category, double price);
 
-	// virtual destructor (for inheritance)
+	/* 
+	 * Ensures that when a derived class object is deleted through a base
+     * class pointer, both destructors are called correctly.
+     */
 	virtual ~MenuItem();
 
-	// Getters
+	// =========
+	//  GETTERS
+	// =========
 	std::string getItemID() const;
 	std::string getName() const;
 	std::string getCategory() const;
 	double getPrice() const;
 
-	// Setters
+	// =========
+	//  SETTERS
+	// =========
 	void setItemID(std::string id);
 	void setName(std::string name);
 	void setCategory(std::string category);
