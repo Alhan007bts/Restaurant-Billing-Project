@@ -10,8 +10,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-# Find Qt 5 components
-find_package(Qt5 REQUIRED COMPONENTS Widgets Core Gui)
+# Find Qt 6 components
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 
 # Source and header files
 set(SOURCES
@@ -20,10 +20,14 @@ set(SOURCES
     MainWindow.cpp
     MenuItem.h
     MenuItem.cpp
+    FoodItem.h
+    FoodItem.cpp
+    BeverageItem.h
+    BeverageItem.cpp
 )
 
 # Create the executable
 add_executable(restaurant_billing_qt ${SOURCES})
 
-# Link Qt 5 libraries
-target_link_libraries(restaurant_billing_qt PRIVATE Qt5::Widgets)
+# Link Qt 6 libraries
+target_link_libraries(restaurant_billing_qt PRIVATE Qt6::Widgets)

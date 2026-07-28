@@ -8,8 +8,10 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QTextEdit>
+#include <QComboBox>
 #include <vector>
 #include <memory>
+#include <map>
 #include "MenuItem.h"
 
 class MainWindow : public QMainWindow {
@@ -24,6 +26,7 @@ private slots:
     void onRemoveItemClicked();
     void onCalculateBillClicked();
     void onClearBillClicked();
+    void onTableChanged(int index);
 
 private:
     void setupUI();
@@ -32,11 +35,13 @@ private:
 
     // Data members
     std::vector<std::shared_ptr<MenuItem>> menuItems;
-    std::vector<std::pair<std::shared_ptr<MenuItem>, int>> currentOrder; // (Item, Quantity)
+    std::map<int, std::vector<std::pair<std::shared_ptr<MenuItem>, int>>> tableOrders; // Map of Table ID -> Order vector
+    int currentTableNumber;
 
     // UI Widgets
     QTableWidget *menuTable;
     QTableWidget *orderTable;
+    QComboBox *tableComboBox;
     QSpinBox *quantitySpinner;
     QDoubleSpinBox *discountSpinner;
     QDoubleSpinBox *taxSpinner;

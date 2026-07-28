@@ -25,7 +25,7 @@ public:
     double getSpecialFee() const { return specialFee; }
 };
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentTableNumber(1) {
     setupUI();
     populateMenu();
 }
@@ -34,7 +34,7 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::setupUI() {
     // Set window properties
-    setWindowTitle("Antigravity Restaurant - Billing System");
+    setWindowTitle("Restaurant Billing and Ordering System");
     resize(1000, 700);
 
     // Apply premium dark mode styles
@@ -51,7 +51,7 @@ void MainWindow::setupUI() {
         "QPushButton#clearBtn { background-color: #e53e3e; }"
         "QPushButton#clearBtn:hover { background-color: #fc8181; }"
         "QPushButton#clearBtn:pressed { background-color: #c53030; }"
-        "QSpinBox, QDoubleSpinBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
+        "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
         "QLabel { font-weight: 500; }"
         "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #63b3ed; margin-bottom: 10px; }"
         "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: #48bb78; }"
@@ -64,7 +64,7 @@ void MainWindow::setupUI() {
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
 
     // Title
-    QLabel *titleLabel = new QLabel("Antigravity Restaurant Billing", this);
+    QLabel *titleLabel = new QLabel("Restaurant Billing and Ordering System", this);
     titleLabel->setObjectName("titleLabel");
     mainLayout->addWidget(titleLabel);
 
@@ -75,6 +75,17 @@ void MainWindow::setupUI() {
     // Left pane
     QVBoxLayout *leftPane = new QVBoxLayout();
     splitLayout->addLayout(leftPane, 3); // 3/5 ratio
+
+    // Table Selector
+    QHBoxLayout *tableSelectLayout = new QHBoxLayout();
+    tableSelectLayout->addWidget(new QLabel("Select Dining Table:", this));
+    tableComboBox = new QComboBox(this);
+    for (int i = 1; i <= 8; ++i) {
+        tableComboBox->addItem(QString("Table %1").arg(i), i);
+    }
+    connect(tableComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onTableChanged);
+    tableSelectLayout->addWidget(tableComboBox);
+    leftPane->addLayout(tableSelectLayout);
 
     // 1. Menu Section
     leftPane->addWidget(new QLabel("Menu Items:", this));
@@ -196,6 +207,7 @@ void MainWindow::onAddItemClicked() {
 
     auto selectedItem = menuItems[selectedRow];
     int qty = quantitySpinner->value();
+    auto &currentOrder = tableOrders[currentTableNumber];
 
     // Check if already in order
     bool found = false;
@@ -222,11 +234,13 @@ void MainWindow::onRemoveItemClicked() {
         return;
     }
 
+    auto &currentOrder = tableOrders[currentTableNumber];
     currentOrder.erase(currentOrder.begin() + selectedRow);
     updateOrderTable();
 }
 
 void MainWindow::updateOrderTable() {
+    auto &currentOrder = tableOrders[currentTableNumber];
     orderTable->setRowCount(currentOrder.size());
     double tempSubtotal = 0.0;
 
@@ -246,6 +260,7 @@ void MainWindow::updateOrderTable() {
 }
 
 void MainWindow::onCalculateBillClicked() {
+    auto &currentOrder = tableOrders[currentTableNumber];
     if (currentOrder.empty()) {
         QMessageBox::warning(this, "Empty Order", "No items added to the order yet.");
         return;
@@ -256,9 +271,10 @@ void MainWindow::onCalculateBillClicked() {
 
     std::stringstream ss;
     ss << "========================================\n";
-    ss << "         ANTIGRAVITY RESTAURANT         \n";
+    ss << "  RESTAURANT BILLING & ORDERING SYSTEM  \n";
     ss << "            INVOICE / RECEIPT           \n";
     ss << "========================================\n";
+    ss << "Table ID: " << currentTableNumber << "\n";
     ss << "Date/Time: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString() << "\n";
     ss << "----------------------------------------\n";
     ss << std::left << std::setw(20) << "Item Name" 
@@ -315,9 +331,24 @@ void MainWindow::onCalculateBillClicked() {
 }
 
 void MainWindow::onClearBillClicked() {
+    auto &currentOrder = tableOrders[currentTableNumber];
     currentOrder.clear();
     updateOrderTable();
     receiptDisplay->clear();
     totalLabel->setText("Total: $0.00");
     discountSpinner->setValue(0.0);
+}
+
+void MainWindow::onTableChanged(int index) {
+    currentTableNumber = tableComboBox->itemData(index).toInt();
+    updateOrderTable();
+    
+    // Check if the switched table has an active order
+    auto &currentOrder = tableOrders[currentTableNumber];
+    if (!currentOrder.empty()) {
+        onCalculateBillClicked();
+    } else {
+        receiptDisplay->clear();
+        totalLabel->setText("Total: $0.00");
+    }
 }
