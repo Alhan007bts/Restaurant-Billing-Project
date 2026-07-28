@@ -1,18 +1,18 @@
+#include "MainWindow.h"
 #include <QApplication>
 #include <QCoreApplication>
 #include <QtGlobal>
-#include "MainWindow.h"
 
 int main(int argc, char *argv[]) {
-    // Enable High DPI scaling
+  // Enable High DPI scaling
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
-    QApplication app(argc, argv);
+  QApplication app(argc, argv);
 
-    MainWindow window;
-    window.show();
+  MainWindow window;
+  window.show();
 
-    return app.exec();
+  return app.exec();
 }
