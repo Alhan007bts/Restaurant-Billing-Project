@@ -1,4 +1,6 @@
 #include "MainWindow.h"
+#include "FoodItem.h"
+#include "BeverageItem.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -6,24 +8,6 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <sstream>
-
-// Mock implementation of MenuItem since FoodItem/BeverageItem are maintained by teammates
-class MockMenuItem : public MenuItem {
-private:
-    std::string extraDetails;
-    double specialFee;
-
-public:
-    MockMenuItem(std::string id, std::string name, std::string category, double price, std::string details = "", double fee = 0.0)
-        : MenuItem(id, name, category, price), extraDetails(details), specialFee(fee) {}
-
-    void displayItem() const override {
-        // Concrete implementation of pure virtual function
-    }
-
-    std::string getExtraDetails() const { return extraDetails; }
-    double getSpecialFee() const { return specialFee; }
-};
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentTableNumber(1) {
     setupUI();
@@ -173,14 +157,14 @@ void MainWindow::setupUI() {
 }
 
 void MainWindow::populateMenu() {
-    // Add mock items using the MockMenuItem class
-    menuItems.push_back(std::make_shared<MockMenuItem>("F001", "Margherita Pizza", "Main Course", 12.99, "Italian | Prep: 12m | Spicy: No", 6.00));
-    menuItems.push_back(std::make_shared<MockMenuItem>("F002", "Spicy Chicken Burger", "Main Course", 8.99, "American | Prep: 8m | Spicy: Yes", 4.00));
-    menuItems.push_back(std::make_shared<MockMenuItem>("F003", "Bruschetta", "Appetizer", 6.50, "Italian | Prep: 5m | Spicy: No", 2.50));
-    menuItems.push_back(std::make_shared<MockMenuItem>("F004", "Chocolate Lava Cake", "Dessert", 7.25, "French | Prep: 10m | Spicy: No", 5.00));
-    menuItems.push_back(std::make_shared<MockMenuItem>("B001", "Iced Latte", "Beverage", 4.50, "350ml | Coffee | Carb: No"));
-    menuItems.push_back(std::make_shared<MockMenuItem>("B002", "Coca Cola", "Beverage", 2.50, "330ml | Soft Drink | Carb: Yes"));
-    menuItems.push_back(std::make_shared<MockMenuItem>("B003", "Fresh Orange Juice", "Beverage", 5.00, "400ml | Juice | Carb: No"));
+    // Add real items using FoodItem and BeverageItem classes
+    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0001", "Margherita Pizza", "Main Course", 12.99, "Italian", 12, false));
+    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0002", "Spicy Chicken Burger", "Main Course", 8.99, "American", 8, true));
+    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0003", "Bruschetta", "Appetizer", 6.50, "Italian", 5, false));
+    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0004", "Chocolate Lava Cake", "Dessert", 7.25, "French", 10, false));
+    menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0005", "Iced Latte", "Beverage", 4.50, 350.0, "Coffee", false));
+    menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0006", "Coca Cola", "Beverage", 2.50, 330.0, "Soft Drink", true));
+    menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0007", "Fresh Orange Juice", "Beverage", 5.00, 400.0, "Juice", false));
 
     menuTable->setRowCount(menuItems.size());
     for (size_t i = 0; i < menuItems.size(); ++i) {
@@ -191,8 +175,16 @@ void MainWindow::populateMenu() {
         menuTable->setItem(i, 3, new QTableWidgetItem(QString("$%1").arg(item->getPrice(), 0, 'f', 2)));
         
         QString details = "";
-        if (auto mockItem = std::dynamic_pointer_cast<MockMenuItem>(item)) {
-            details = QString::fromStdString(mockItem->getExtraDetails());
+        if (auto foodItem = std::dynamic_pointer_cast<FoodItem>(item)) {
+            details = QString("%1 | Prep: %2m | Spicy: %3")
+                      .arg(QString::fromStdString(foodItem->getCuisineType()))
+                      .arg(foodItem->getPreparationTime())
+                      .arg(foodItem->getIsSpicy() ? "Yes" : "No");
+        } else if (auto bevItem = std::dynamic_pointer_cast<BeverageItem>(item)) {
+            details = QString("%1ml | %2 | Carb: %3")
+                      .arg(bevItem->getVolume())
+                      .arg(QString::fromStdString(bevItem->getBeverageType()))
+                      .arg(bevItem->getIsCarbonated() ? "Yes" : "No");
         }
         menuTable->setItem(i, 4, new QTableWidgetItem(details));
     }
@@ -296,8 +288,8 @@ void MainWindow::onCalculateBillClicked() {
            << "$" << itemSubtotal << "\n";
 
         // Add special fees/calculations if applicable
-        if (auto mockItem = std::dynamic_pointer_cast<MockMenuItem>(item)) {
-            double prepFee = mockItem->getSpecialFee() * qty;
+        if (auto foodItem = std::dynamic_pointer_cast<FoodItem>(item)) {
+            double prepFee = foodItem->calculatePreparationFee() * qty;
             totalPrepFee += prepFee;
         }
     }
