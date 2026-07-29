@@ -30,12 +30,6 @@ bool parseBool(const std::string& value, bool& result) {
 bool MenuFileIO::saveMenu(const std::string& fileName,
                           const std::vector<std::shared_ptr<MenuItem>>& menuItems,
                           std::string* errorMessage) {
-    // NOTE FOR SYED (CSV Migration):
-    // To change this function to save to standard CSV format:
-    // 1. Change the header line to: file << "TYPE,ID,NAME,CATEGORY,PRICE,EXTRA1,EXTRA2,EXTRA3\n";
-    // 2. Change the delimiter from '|' to ',' when writing fields.
-    // 3. For string fields that might contain commas or double quotes (like Name, Category, Cuisine, Beverage Type),
-    //    wrap the field in double quotes and escape internal quotes (e.g. replace " with "").
     std::ofstream file(fileName);
     if (!file) {
         if (errorMessage) *errorMessage = "Could not open file for writing: " + fileName;
@@ -73,11 +67,6 @@ bool MenuFileIO::saveMenu(const std::string& fileName,
 bool MenuFileIO::loadMenu(const std::string& fileName,
                           std::vector<std::shared_ptr<MenuItem>>& menuItems,
                           std::string* errorMessage) {
-    // NOTE FOR SYED (CSV Migration):
-    // To change this function to load from standard CSV format:
-    // 1. Change the line reading logic to parse fields separated by commas ',' instead of pipes '|'.
-    // 2. Implement a simple CSV parser that can handle fields wrapped in double quotes and containing commas,
-    //    so standard CSV rules are followed safely.
     std::ifstream file(fileName);
     if (!file) {
         if (errorMessage) *errorMessage = "Could not open file for reading: " + fileName;
