@@ -814,8 +814,8 @@ void MainWindow::onMenuItemChanged(QTableWidgetItem *item) {
         bool ok = false;
         double newPrice = txt.toDouble(&ok);
         if (ok && newPrice >= 0.0) {
-            // Update price in memory using virtual updatePrice
-            menuItems[row]->updatePrice(newPrice);
+            // Update price in memory directly to bypass convenience fee logic
+            menuItems[row]->setPrice(newPrice);
 
             // Re-save menu persistently
             std::string saveErr;
