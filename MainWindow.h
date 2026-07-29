@@ -32,12 +32,15 @@ private slots:
   void onExportMenuTriggered();
   void onImportReceiptTriggered();
   void onExportReceiptTriggered();
+  void onDarkThemeTriggered();
+  void onLightThemeTriggered();
 
 private:
   void setupUI();
   void populateMenu();
   void updateOrderTable();
   void refreshMenuTable();
+  void applyTheme(bool dark);
 
   // Data members
   std::vector<std::shared_ptr<MenuItem>> menuItems;

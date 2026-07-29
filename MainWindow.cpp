@@ -18,6 +18,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QActionGroup>
 #include <QFileDialog>
 
 class AddMenuItemDialog : public QDialog {
@@ -144,32 +145,8 @@ void MainWindow::setupUI() {
     resize(1000, 700);
 
     // Apply premium dark mode styles
-    this->setStyleSheet(
-        "QMainWindow { background-color: #1a1a24; }"
-        "QWidget { color: #e2e8f0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; }"
-        "QMenuBar { background-color: #262635; color: #e2e8f0; }"
-        "QMenuBar::item { background-color: transparent; padding: 4px 10px; }"
-        "QMenuBar::item:selected { background-color: #35354a; color: #63b3ed; }"
-        "QMenu { background-color: #262635; color: #e2e8f0; border: 1px solid #3f3f5a; }"
-        "QMenu::item:selected { background-color: #35354a; color: #63b3ed; }"
-        "QTableWidget { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; gridline-color: #3f3f5a; }"
-        "QTableWidget::item { padding: 5px; }"
-        "QHeaderView::section { background-color: #35354a; color: #63b3ed; padding: 6px; font-weight: bold; border: 1px solid #262635; }"
-        "QTextEdit { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; color: #a0aec0; font-family: 'Courier New', monospace; font-size: 13px; }"
-        "QPushButton { background-color: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #4299e1; }"
-        "QPushButton:pressed { background-color: #2b6cb0; }"
-        "QPushButton#clearBtn { background-color: #e53e3e; }"
-        "QPushButton#clearBtn:hover { background-color: #fc8181; }"
-        "QPushButton#clearBtn:pressed { background-color: #c53030; }"
-        "QPushButton#addMenuBtn { background-color: #38a169; }"
-        "QPushButton#addMenuBtn:hover { background-color: #48bb78; }"
-        "QPushButton#addMenuBtn:pressed { background-color: #2f855a; }"
-        "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
-        "QLabel { font-weight: 500; }"
-        "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #63b3ed; margin-bottom: 10px; }"
-        "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: #48bb78; }"
-    );
+    // Apply default Dark Theme
+    applyTheme(true);
 
     // Menu Bar Setup
     QMenuBar *mBar = this->menuBar();
@@ -198,6 +175,22 @@ void MainWindow::setupUI() {
     QAction *exitAct = new QAction("E&xit", this);
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
     fileMenu->addAction(exitAct);
+
+    QMenu *themeMenu = mBar->addMenu("&Theme");
+    QActionGroup *themeGroup = new QActionGroup(this);
+
+    QAction *darkThemeAct = new QAction("&Dark Theme", this);
+    darkThemeAct->setCheckable(true);
+    darkThemeAct->setChecked(true);
+    connect(darkThemeAct, &QAction::triggered, this, &MainWindow::onDarkThemeTriggered);
+    themeMenu->addAction(darkThemeAct);
+    themeGroup->addAction(darkThemeAct);
+
+    QAction *lightThemeAct = new QAction("&Light Theme", this);
+    lightThemeAct->setCheckable(true);
+    connect(lightThemeAct, &QAction::triggered, this, &MainWindow::onLightThemeTriggered);
+    themeMenu->addAction(lightThemeAct);
+    themeGroup->addAction(lightThemeAct);
 
     // Main layout structures
     QWidget *centralWidget = new QWidget(this);
@@ -659,4 +652,70 @@ void MainWindow::onExportReceiptTriggered() {
 
     file << receiptText.toStdString();
     QMessageBox::information(this, "Success", "Receipt exported successfully!");
+}
+
+void MainWindow::applyTheme(bool dark) {
+    if (dark) {
+        this->setStyleSheet(
+            "QMainWindow { background-color: #1a1a24; }"
+            "QWidget { color: #e2e8f0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; }"
+            "QMenuBar { background-color: #262635; color: #e2e8f0; }"
+            "QMenuBar::item { background-color: transparent; padding: 4px 10px; }"
+            "QMenuBar::item:selected { background-color: #35354a; color: #63b3ed; }"
+            "QMenu { background-color: #262635; color: #e2e8f0; border: 1px solid #3f3f5a; }"
+            "QMenu::item:selected { background-color: #35354a; color: #63b3ed; }"
+            "QTableWidget { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; gridline-color: #3f3f5a; selection-background-color: #3182ce; selection-color: white; }"
+            "QTableWidget::item { padding: 5px; }"
+            "QHeaderView::section { background-color: #35354a; color: #63b3ed; padding: 6px; font-weight: bold; border: 1px solid #262635; }"
+            "QTextEdit { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; color: #a0aec0; font-family: 'Courier New', monospace; font-size: 13px; }"
+            "QPushButton { background-color: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #4299e1; }"
+            "QPushButton:pressed { background-color: #2b6cb0; }"
+            "QPushButton#clearBtn { background-color: #e53e3e; }"
+            "QPushButton#clearBtn:hover { background-color: #fc8181; }"
+            "QPushButton#clearBtn:pressed { background-color: #c53030; }"
+            "QPushButton#addMenuBtn { background-color: #38a169; }"
+            "QPushButton#addMenuBtn:hover { background-color: #48bb78; }"
+            "QPushButton#addMenuBtn:pressed { background-color: #2f855a; }"
+            "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
+            "QLabel { font-weight: 500; }"
+            "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #63b3ed; margin-bottom: 10px; }"
+            "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: #48bb78; }"
+        );
+    } else {
+        this->setStyleSheet(
+            "QMainWindow { background-color: #f7fafc; }"
+            "QWidget { color: #2d3748; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; }"
+            "QMenuBar { background-color: #edf2f7; color: #2d3748; }"
+            "QMenuBar::item { background-color: transparent; padding: 4px 10px; }"
+            "QMenuBar::item:selected { background-color: #e2e8f0; color: #3182ce; }"
+            "QMenu { background-color: #ffffff; color: #2d3748; border: 1px solid #cbd5e0; }"
+            "QMenu::item:selected { background-color: #e2e8f0; color: #3182ce; }"
+            "QTableWidget { background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; gridline-color: #edf2f7; selection-background-color: #ebf8ff; selection-color: #2b6cb0; }"
+            "QTableWidget::item { padding: 5px; }"
+            "QHeaderView::section { background-color: #edf2f7; color: #2b6cb0; padding: 6px; font-weight: bold; border: 1px solid #cbd5e0; }"
+            "QTextEdit { background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; color: #4a5568; font-family: 'Courier New', monospace; font-size: 13px; }"
+            "QPushButton { background-color: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #4299e1; }"
+            "QPushButton:pressed { background-color: #2b6cb0; }"
+            "QPushButton#clearBtn { background-color: #e53e3e; }"
+            "QPushButton#clearBtn:hover { background-color: #fc8181; }"
+            "QPushButton#clearBtn:pressed { background-color: #c53030; }"
+            "QPushButton#addMenuBtn { background-color: #38a169; }"
+            "QPushButton#addMenuBtn:hover { background-color: #48bb78; }"
+            "QPushButton#addMenuBtn:pressed { background-color: #2f855a; }"
+            "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 5px; padding: 4px; color: #2d3748; }"
+            "QLabel { font-weight: 500; }"
+            "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #2b6cb0; margin-bottom: 10px; }"
+            "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: #38a169; }"
+        );
+    }
+}
+
+void MainWindow::onDarkThemeTriggered() {
+    applyTheme(true);
+}
+
+void MainWindow::onLightThemeTriggered() {
+    applyTheme(false);
 }
