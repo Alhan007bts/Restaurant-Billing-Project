@@ -36,6 +36,8 @@ private slots:
   void onLightThemeTriggered();
   void onDeleteMenuItemClicked();
   void onMenuItemChanged(QTableWidgetItem *item);
+  void onMinusClicked();
+  void onPlusClicked();
 
 private:
   void setupUI();

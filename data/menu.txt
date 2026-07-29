@@ -1,0 +1,8 @@
+TYPE|ID|NAME|CATEGORY|PRICE|EXTRA1|EXTRA2|EXTRA3
+FOOD|ITEM-0001|Margherita Pizza|Main Course|12.99|Italian|12|0
+FOOD|ITEM-0002|Spicy Chicken Burger|Main Course|8.99|American|8|1
+FOOD|ITEM-0003|Bruschetta|Appetizer|6.50|Italian|5|0
+FOOD|ITEM-0004|Chocolate Lava Cake|Dessert|7.25|French|10|0
+BEVERAGE|ITEM-0005|Iced Latte|Beverage|4.50|350.00|Coffee|0
+BEVERAGE|ITEM-0006|Coca Cola|Beverage|2.50|330.00|Soft Drink|1
+BEVERAGE|ITEM-0007|Fresh Orange Juice|Beverage|5.00|400.00|Juice|0
