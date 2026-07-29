@@ -6,13 +6,13 @@ BiteKing is a modern, cross-platform C++/Qt 6 restaurant point-of-sale (POS) and
 
 ## Prerequisites
 
-To compile and run this application, you must have **CMake** and **Qt 6 SDK (Core, Gui, Widgets)** installed.
+To compile and run this application, you must have CMake and Qt 6 SDK (Core, Gui, Widgets) installed.
 
 ---
 
 ## How to Build & Run
 
-### 🐧 Option 1: In WSL / Linux Terminal (Recommended for WSL Users)
+### Option 1: In WSL / Linux Terminal (Recommended for WSL Users)
 
 1. **Install Dependencies:**
    On Ubuntu/Debian (inside WSL):
@@ -35,13 +35,13 @@ To compile and run this application, you must have **CMake** and **Qt 6 SDK (Cor
 
 ---
 
-### 💻 Option 2: In Visual Studio (Windows Native)
+### Option 2: In Visual Studio (Windows Native)
 
 Visual Studio natively supports opening and building CMake projects.
 
 1. **Install Qt 6:**
-   - Download the Qt Online Installer from [qt.io](https://www.qt.io/download-open-source).
-   - Install **Qt 6.x** for MSVC (e.g., *Qt 6.5 MSVC 2019 64-bit*).
+   - Download the Qt Online Installer from qt.io.
+   - Install Qt 6.x for MSVC (e.g., *Qt 6.5 MSVC 2019 64-bit*).
 
 2. **Open the Project in Visual Studio:**
    - Open Visual Studio.
