@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "FoodItem.h"
 #include "BeverageItem.h"
+#include "MenuFileIO.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -8,8 +9,124 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <sstream>
+#include <QDialog>
+#include <QLineEdit>
+#include <QCheckBox>
+#include <QFormLayout>
+#include <QDialogButtonBox>
+
+class AddMenuItemDialog : public QDialog {
+private:
+    QLineEdit *nameEdit;
+    QDoubleSpinBox *priceSpinner;
+    QComboBox *typeCombo;
+
+    QWidget *foodWidget;
+    QLineEdit *cuisineEdit;
+    QSpinBox *prepTimeSpinner;
+    QCheckBox *spicyCheck;
+
+    QWidget *bevWidget;
+    QDoubleSpinBox *volumeSpinner;
+    QLineEdit *bevTypeEdit;
+    QCheckBox *carbonatedCheck;
+
+public:
+    AddMenuItemDialog(QWidget *parent = nullptr) : QDialog(parent) {
+        setWindowTitle("Add New Menu Item");
+        QVBoxLayout *mainLayout = new QVBoxLayout(this);
+
+        QFormLayout *formLayout = new QFormLayout();
+        nameEdit = new QLineEdit(this);
+        priceSpinner = new QDoubleSpinBox(this);
+        priceSpinner->setRange(0.0, 1000.0);
+        priceSpinner->setValue(5.00);
+
+        typeCombo = new QComboBox(this);
+        typeCombo->addItem("Food", "FOOD");
+        typeCombo->addItem("Beverage", "BEVERAGE");
+
+        formLayout->addRow("Name:", nameEdit);
+        formLayout->addRow("Price ($):", priceSpinner);
+        formLayout->addRow("Category Type:", typeCombo);
+        mainLayout->addLayout(formLayout);
+
+        // --- Food Fields ---
+        foodWidget = new QWidget(this);
+        QFormLayout *foodLayout = new QFormLayout(foodWidget);
+        cuisineEdit = new QLineEdit(foodWidget);
+        cuisineEdit->setText("Unknown");
+        prepTimeSpinner = new QSpinBox(foodWidget);
+        prepTimeSpinner->setRange(0, 180);
+        prepTimeSpinner->setValue(10);
+        spicyCheck = new QCheckBox("Is Spicy", foodWidget);
+        foodLayout->addRow("Cuisine Type:", cuisineEdit);
+        foodLayout->addRow("Prep Time (min):", prepTimeSpinner);
+        foodLayout->addRow(spicyCheck);
+        mainLayout->addWidget(foodWidget);
+
+        // --- Beverage Fields ---
+        bevWidget = new QWidget(this);
+        QFormLayout *bevLayout = new QFormLayout(bevWidget);
+        volumeSpinner = new QDoubleSpinBox(bevWidget);
+        volumeSpinner->setRange(0.0, 5000.0);
+        volumeSpinner->setValue(330.0);
+        bevTypeEdit = new QLineEdit(bevWidget);
+        bevTypeEdit->setText("Unknown");
+        carbonatedCheck = new QCheckBox("Is Carbonated", bevWidget);
+        bevLayout->addRow("Volume (ml):", volumeSpinner);
+        bevLayout->addRow("Beverage Type:", bevTypeEdit);
+        bevLayout->addRow(carbonatedCheck);
+        mainLayout->addWidget(bevWidget);
+
+        foodWidget->show();
+        bevWidget->hide();
+
+        connect(typeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
+            QString selected = typeCombo->itemData(index).toString();
+            if (selected == "FOOD") {
+                foodWidget->show();
+                bevWidget->hide();
+            } else {
+                foodWidget->hide();
+                bevWidget->show();
+            }
+            adjustSize();
+        });
+
+        QDialogButtonBox *buttonBox = new QDialogButtonBox(
+            QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+        connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+        connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+        mainLayout->addWidget(buttonBox);
+
+        setStyleSheet(
+            "QDialog { background-color: #1a1a24; color: #e2e8f0; }"
+            "QLabel { color: #63b3ed; font-weight: bold; }"
+            "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
+            "QPushButton { background-color: #3182ce; color: white; border: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; }"
+            "QPushButton:hover { background-color: #4299e1; }"
+            "QCheckBox { color: #e2e8f0; }"
+        );
+    }
+
+    QString getName() const { return nameEdit->text(); }
+    double getPrice() const { return priceSpinner->value(); }
+    QString getType() const { return typeCombo->currentData().toString(); }
+
+    QString getCuisine() const { return cuisineEdit->text(); }
+    int getPrepTime() const { return prepTimeSpinner->value(); }
+    bool getIsSpicy() const { return spicyCheck->isChecked(); }
+
+    double getVolume() const { return volumeSpinner->value(); }
+    QString getBeverageType() const { return bevTypeEdit->text(); }
+    bool getIsCarbonated() const { return carbonatedCheck->isChecked(); }
+};
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), currentTableNumber(1) {
+    for (int i = 1; i <= 8; ++i) {
+        manager.addTable(i);
+    }
     setupUI();
     populateMenu();
 }
@@ -35,6 +152,9 @@ void MainWindow::setupUI() {
         "QPushButton#clearBtn { background-color: #e53e3e; }"
         "QPushButton#clearBtn:hover { background-color: #fc8181; }"
         "QPushButton#clearBtn:pressed { background-color: #c53030; }"
+        "QPushButton#addMenuBtn { background-color: #38a169; }"
+        "QPushButton#addMenuBtn:hover { background-color: #48bb78; }"
+        "QPushButton#addMenuBtn:pressed { background-color: #2f855a; }"
         "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
         "QLabel { font-weight: 500; }"
         "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #63b3ed; margin-bottom: 10px; }"
@@ -92,6 +212,12 @@ void MainWindow::setupUI() {
     addButton = new QPushButton("Add to Order", this);
     connect(addButton, &QPushButton::clicked, this, &MainWindow::onAddItemClicked);
     addControlLayout->addWidget(addButton);
+
+    addMenuItemButton = new QPushButton("Add New Menu Item", this);
+    addMenuItemButton->setObjectName("addMenuBtn");
+    connect(addMenuItemButton, &QPushButton::clicked, this, &MainWindow::onAddMenuItemClicked);
+    addControlLayout->addWidget(addMenuItemButton);
+
     leftPane->addLayout(addControlLayout);
 
     // 2. Order Section
@@ -157,15 +283,28 @@ void MainWindow::setupUI() {
 }
 
 void MainWindow::populateMenu() {
-    // Add real items using FoodItem and BeverageItem classes
-    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0001", "Margherita Pizza", "Main Course", 12.99, "Italian", 12, false));
-    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0002", "Spicy Chicken Burger", "Main Course", 8.99, "American", 8, true));
-    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0003", "Bruschetta", "Appetizer", 6.50, "Italian", 5, false));
-    menuItems.push_back(std::make_shared<FoodItem>("ITEM-0004", "Chocolate Lava Cake", "Dessert", 7.25, "French", 10, false));
-    menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0005", "Iced Latte", "Beverage", 4.50, 350.0, "Coffee", false));
-    menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0006", "Coca Cola", "Beverage", 2.50, 330.0, "Soft Drink", true));
-    menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0007", "Fresh Orange Juice", "Beverage", 5.00, 400.0, "Juice", false));
+    std::string err;
+    if (!MenuFileIO::loadMenu("menu.txt", menuItems, &err)) {
+        // File not found or failed to load. Create default menu items:
+        menuItems.push_back(std::make_shared<FoodItem>("ITEM-0001", "Margherita Pizza", "Main Course", 12.99, "Italian", 12, false));
+        menuItems.push_back(std::make_shared<FoodItem>("ITEM-0002", "Spicy Chicken Burger", "Main Course", 8.99, "American", 8, true));
+        menuItems.push_back(std::make_shared<FoodItem>("ITEM-0003", "Bruschetta", "Appetizer", 6.50, "Italian", 5, false));
+        menuItems.push_back(std::make_shared<FoodItem>("ITEM-0004", "Chocolate Lava Cake", "Dessert", 7.25, "French", 10, false));
+        menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0005", "Iced Latte", "Beverage", 4.50, 350.0, "Coffee", false));
+        menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0006", "Coca Cola", "Beverage", 2.50, 330.0, "Soft Drink", true));
+        menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0007", "Fresh Orange Juice", "Beverage", 5.00, 400.0, "Juice", false));
 
+        // Save it so we have a template for future loads
+        MenuFileIO::saveMenu("menu.txt", menuItems);
+    }
+
+    // Register these items in RestaurantManager
+    manager.replaceMenuItems(menuItems);
+
+    refreshMenuTable();
+}
+
+void MainWindow::refreshMenuTable() {
     menuTable->setRowCount(menuItems.size());
     for (size_t i = 0; i < menuItems.size(); ++i) {
         auto item = menuItems[i];
@@ -199,21 +338,14 @@ void MainWindow::onAddItemClicked() {
 
     auto selectedItem = menuItems[selectedRow];
     int qty = quantitySpinner->value();
-    auto &currentOrder = tableOrders[currentTableNumber];
 
-    // Check if already in order
-    bool found = false;
-    for (auto &orderItem : currentOrder) {
-        if (orderItem.first->getItemID() == selectedItem->getItemID()) {
-            orderItem.second += qty;
-            found = true;
-            break;
-        }
+    auto table = manager.getTable(currentTableNumber);
+    if (table && !table->hasActiveOrder()) {
+        std::string orderID = "ORD-" + std::to_string(currentTableNumber) + "-" + std::to_string(QDateTime::currentMSecsSinceEpoch());
+        manager.openTableOrder(currentTableNumber, orderID);
     }
 
-    if (!found) {
-        currentOrder.push_back({selectedItem, qty});
-    }
+    manager.addItemToTable(currentTableNumber, selectedItem->getItemID(), qty);
 
     updateOrderTable();
     quantitySpinner->setValue(1); // reset spinner
@@ -226,20 +358,35 @@ void MainWindow::onRemoveItemClicked() {
         return;
     }
 
-    auto &currentOrder = tableOrders[currentTableNumber];
-    currentOrder.erase(currentOrder.begin() + selectedRow);
+    auto table = manager.getTable(currentTableNumber);
+    if (table && table->hasActiveOrder()) {
+        auto order = table->getCurrentOrder();
+        if (order && selectedRow < static_cast<int>(order->getItems().size())) {
+            std::string itemID = order->getItems()[selectedRow].item->getItemID();
+            manager.removeItemFromTable(currentTableNumber, itemID);
+        }
+    }
+
     updateOrderTable();
 }
 
 void MainWindow::updateOrderTable() {
-    auto &currentOrder = tableOrders[currentTableNumber];
-    orderTable->setRowCount(currentOrder.size());
+    auto table = manager.getTable(currentTableNumber);
+    if (!table || !table->hasActiveOrder()) {
+        orderTable->setRowCount(0);
+        totalLabel->setText("Total: $0.00");
+        return;
+    }
+
+    auto order = table->getCurrentOrder();
+    const auto& items = order->getItems();
+    orderTable->setRowCount(items.size());
     double tempSubtotal = 0.0;
 
-    for (size_t i = 0; i < currentOrder.size(); ++i) {
-        auto item = currentOrder[i].first;
-        int qty = currentOrder[i].second;
-        double subtotal = item->getPrice() * qty;
+    for (size_t i = 0; i < items.size(); ++i) {
+        auto item = items[i].item;
+        int qty = items[i].quantity;
+        double subtotal = items[i].getSubtotal();
         tempSubtotal += subtotal;
 
         orderTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(item->getName())));
@@ -252,11 +399,14 @@ void MainWindow::updateOrderTable() {
 }
 
 void MainWindow::onCalculateBillClicked() {
-    auto &currentOrder = tableOrders[currentTableNumber];
-    if (currentOrder.empty()) {
+    auto table = manager.getTable(currentTableNumber);
+    if (!table || !table->hasActiveOrder() || table->getCurrentOrder()->isEmpty()) {
         QMessageBox::warning(this, "Empty Order", "No items added to the order yet.");
         return;
     }
+
+    auto order = table->getCurrentOrder();
+    const auto& items = order->getItems();
 
     double subtotal = 0.0;
     double totalPrepFee = 0.0;
@@ -267,6 +417,7 @@ void MainWindow::onCalculateBillClicked() {
     ss << "            INVOICE / RECEIPT           \n";
     ss << "========================================\n";
     ss << "Table ID: " << currentTableNumber << "\n";
+    ss << "Order ID: " << order->getOrderID() << "\n";
     ss << "Date/Time: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss").toStdString() << "\n";
     ss << "----------------------------------------\n";
     ss << std::left << std::setw(20) << "Item Name" 
@@ -275,11 +426,11 @@ void MainWindow::onCalculateBillClicked() {
        << "Subtotal\n";
     ss << "----------------------------------------\n";
 
-    for (const auto &pair : currentOrder) {
-        auto item = pair.first;
-        int qty = pair.second;
+    for (const auto &line : items) {
+        auto item = line.item;
+        int qty = line.quantity;
         double price = item->getPrice();
-        double itemSubtotal = price * qty;
+        double itemSubtotal = line.getSubtotal();
         subtotal += itemSubtotal;
 
         ss << std::left << std::setw(20) << (item->getName().length() > 18 ? item->getName().substr(0, 17) + "..." : item->getName())
@@ -323,8 +474,10 @@ void MainWindow::onCalculateBillClicked() {
 }
 
 void MainWindow::onClearBillClicked() {
-    auto &currentOrder = tableOrders[currentTableNumber];
-    currentOrder.clear();
+    auto table = manager.getTable(currentTableNumber);
+    if (table) {
+        table->setOccupied(false);
+    }
     updateOrderTable();
     receiptDisplay->clear();
     totalLabel->setText("Total: $0.00");
@@ -336,11 +489,72 @@ void MainWindow::onTableChanged(int index) {
     updateOrderTable();
     
     // Check if the switched table has an active order
-    auto &currentOrder = tableOrders[currentTableNumber];
-    if (!currentOrder.empty()) {
+    auto table = manager.getTable(currentTableNumber);
+    if (table && table->hasActiveOrder() && !table->getCurrentOrder()->isEmpty()) {
         onCalculateBillClicked();
     } else {
         receiptDisplay->clear();
         totalLabel->setText("Total: $0.00");
+    }
+}
+
+void MainWindow::onAddMenuItemClicked() {
+    AddMenuItemDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        QString name = dialog.getName().trimmed();
+        if (name.isEmpty()) {
+            QMessageBox::warning(this, "Input Error", "Item name cannot be empty.");
+            return;
+        }
+        double price = dialog.getPrice();
+        QString categoryType = dialog.getType();
+
+        // Calculate the next ID (ITEM-XXXX format)
+        int maxNum = 0;
+        for (const auto& item : menuItems) {
+            if (item) {
+                std::string id = item->getItemID();
+                if (id.length() == 9 && id.substr(0, 5) == "ITEM-") {
+                    try {
+                        int num = std::stoi(id.substr(5));
+                        if (num > maxNum) maxNum = num;
+                    } catch (...) {}
+                }
+            }
+        }
+        int nextNum = maxNum + 1;
+        std::stringstream ss;
+        ss << "ITEM-" << std::setfill('0') << std::setw(4) << nextNum;
+        std::string newID = ss.str();
+
+        std::shared_ptr<MenuItem> newItem;
+        if (categoryType == "FOOD") {
+            newItem = std::make_shared<FoodItem>(
+                newID, name.toStdString(), "Main Course", price,
+                dialog.getCuisine().toStdString(),
+                dialog.getPrepTime(),
+                dialog.getIsSpicy()
+            );
+        } else {
+            newItem = std::make_shared<BeverageItem>(
+                newID, name.toStdString(), "Beverage", price,
+                dialog.getVolume(),
+                dialog.getBeverageType().toStdString(),
+                dialog.getIsCarbonated()
+            );
+        }
+
+        // Add to collections
+        menuItems.push_back(newItem);
+        manager.addMenuItem(newItem);
+
+        // Save menu persistently
+        std::string saveErr;
+        if (!MenuFileIO::saveMenu("menu.txt", menuItems, &saveErr)) {
+            QMessageBox::critical(this, "Save Error", QString::fromStdString(saveErr));
+        }
+
+        // Refresh UI table
+        refreshMenuTable();
     }
 }

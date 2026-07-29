@@ -24,6 +24,14 @@ set(SOURCES
     FoodItem.cpp
     BeverageItem.h
     BeverageItem.cpp
+    CustomerOrder.h
+    CustomerOrder.cpp
+    DiningTable.h
+    DiningTable.cpp
+    RestaurantManager.h
+    RestaurantManager.cpp
+    MenuFileIO.h
+    MenuFileIO.cpp
 )
 
 # Create the executable
