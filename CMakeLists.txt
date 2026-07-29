@@ -15,23 +15,23 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 
 # Source and header files
 set(SOURCES
-    main_qt.cpp
-    MainWindow.h
-    MainWindow.cpp
-    MenuItem.h
-    MenuItem.cpp
-    FoodItem.h
-    FoodItem.cpp
-    BeverageItem.h
-    BeverageItem.cpp
-    CustomerOrder.h
-    CustomerOrder.cpp
-    DiningTable.h
-    DiningTable.cpp
-    RestaurantManager.h
-    RestaurantManager.cpp
-    MenuFileIO.h
-    MenuFileIO.cpp
+    src/main_qt.cpp
+    src/MainWindow.h
+    src/MainWindow.cpp
+    src/MenuItem.h
+    src/MenuItem.cpp
+    src/FoodItem.h
+    src/FoodItem.cpp
+    src/BeverageItem.h
+    src/BeverageItem.cpp
+    src/CustomerOrder.h
+    src/CustomerOrder.cpp
+    src/DiningTable.h
+    src/DiningTable.cpp
+    src/RestaurantManager.h
+    src/RestaurantManager.cpp
+    src/MenuFileIO.h
+    src/MenuFileIO.cpp
 )
 
 # Create the executable

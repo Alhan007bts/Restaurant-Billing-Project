@@ -20,6 +20,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QFileDialog>
+#include <QDir>
 
 class AddMenuItemDialog : public QDialog {
 private:
@@ -318,8 +319,9 @@ void MainWindow::setupUI() {
 }
 
 void MainWindow::populateMenu() {
+    QDir().mkpath("data"); // Ensure the data directory exists
     std::string err;
-    if (!MenuFileIO::loadMenu("menu.txt", menuItems, &err)) {
+    if (!MenuFileIO::loadMenu("data/menu.txt", menuItems, &err)) {
         // File not found or failed to load. Create default menu items:
         menuItems.push_back(std::make_shared<FoodItem>("ITEM-0001", "Margherita Pizza", "Main Course", 12.99, "Italian", 12, false));
         menuItems.push_back(std::make_shared<FoodItem>("ITEM-0002", "Spicy Chicken Burger", "Main Course", 8.99, "American", 8, true));
@@ -330,7 +332,7 @@ void MainWindow::populateMenu() {
         menuItems.push_back(std::make_shared<BeverageItem>("ITEM-0007", "Fresh Orange Juice", "Beverage", 5.00, 400.0, "Juice", false));
 
         // Save it so we have a template for future loads
-        MenuFileIO::saveMenu("menu.txt", menuItems);
+        MenuFileIO::saveMenu("data/menu.txt", menuItems);
     }
 
     // Register these items in RestaurantManager
@@ -606,7 +608,7 @@ void MainWindow::onAddMenuItemClicked() {
 
         // Save menu persistently
         std::string saveErr;
-        if (!MenuFileIO::saveMenu("menu.txt", menuItems, &saveErr)) {
+        if (!MenuFileIO::saveMenu("data/menu.txt", menuItems, &saveErr)) {
             QMessageBox::critical(this, "Save Error", QString::fromStdString(saveErr));
         }
 
@@ -787,7 +789,7 @@ void MainWindow::onDeleteMenuItemClicked() {
 
         // Save menu persistently
         std::string saveErr;
-        if (!MenuFileIO::saveMenu("menu.txt", menuItems, &saveErr)) {
+        if (!MenuFileIO::saveMenu("data/menu.txt", menuItems, &saveErr)) {
             QMessageBox::critical(this, "Save Error", QString::fromStdString(saveErr));
         }
 
@@ -817,7 +819,7 @@ void MainWindow::onMenuItemChanged(QTableWidgetItem *item) {
 
             // Re-save menu persistently
             std::string saveErr;
-            if (!MenuFileIO::saveMenu("menu.txt", menuItems, &saveErr)) {
+            if (!MenuFileIO::saveMenu("data/menu.txt", menuItems, &saveErr)) {
                 QMessageBox::critical(this, "Save Error", QString::fromStdString(saveErr));
             }
 
