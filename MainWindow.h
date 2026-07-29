@@ -34,6 +34,8 @@ private slots:
   void onExportReceiptTriggered();
   void onDarkThemeTriggered();
   void onLightThemeTriggered();
+  void onDeleteMenuItemClicked();
+  void onMenuItemChanged(QTableWidgetItem *item);
 
 private:
   void setupUI();
@@ -58,7 +60,6 @@ private:
   QPushButton *removeButton;
   QPushButton *calculateButton;
   QPushButton *clearButton;
-  QPushButton *addMenuItemButton;
   QTextEdit *receiptDisplay;
   QLabel *totalLabel;
 };

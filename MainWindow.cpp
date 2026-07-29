@@ -192,6 +192,15 @@ void MainWindow::setupUI() {
     themeMenu->addAction(lightThemeAct);
     themeGroup->addAction(lightThemeAct);
 
+    QMenu *editMenu = mBar->addMenu("&Edit");
+    QAction *addMenuItemAct = new QAction("&Add Menu Item...", this);
+    connect(addMenuItemAct, &QAction::triggered, this, &MainWindow::onAddMenuItemClicked);
+    editMenu->addAction(addMenuItemAct);
+
+    QAction *deleteMenuItemAct = new QAction("&Delete Selected Menu Item", this);
+    connect(deleteMenuItemAct, &QAction::triggered, this, &MainWindow::onDeleteMenuItemClicked);
+    editMenu->addAction(deleteMenuItemAct);
+
     // Main layout structures
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setObjectName("centralWidget");
@@ -243,11 +252,6 @@ void MainWindow::setupUI() {
     addButton = new QPushButton("Add to Order", this);
     connect(addButton, &QPushButton::clicked, this, &MainWindow::onAddItemClicked);
     addControlLayout->addWidget(addButton);
-
-    addMenuItemButton = new QPushButton("Add New Menu Item", this);
-    addMenuItemButton->setObjectName("addMenuBtn");
-    connect(addMenuItemButton, &QPushButton::clicked, this, &MainWindow::onAddMenuItemClicked);
-    addControlLayout->addWidget(addMenuItemButton);
 
     leftPane->addLayout(addControlLayout);
 
@@ -336,13 +340,28 @@ void MainWindow::populateMenu() {
 }
 
 void MainWindow::refreshMenuTable() {
+    // Disconnect signal during bulk population to prevent recursive triggers
+    disconnect(menuTable, &QTableWidget::itemChanged, this, &MainWindow::onMenuItemChanged);
+
     menuTable->setRowCount(menuItems.size());
     for (size_t i = 0; i < menuItems.size(); ++i) {
         auto item = menuItems[i];
-        menuTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(item->getItemID())));
-        menuTable->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(item->getName())));
-        menuTable->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(item->getCategory())));
-        menuTable->setItem(i, 3, new QTableWidgetItem(QString("$%1").arg(item->getPrice(), 0, 'f', 2)));
+        
+        QTableWidgetItem *idItem = new QTableWidgetItem(QString::fromStdString(item->getItemID()));
+        idItem->setFlags(idItem->flags() & ~Qt::ItemIsEditable);
+        menuTable->setItem(i, 0, idItem);
+
+        QTableWidgetItem *nameItem = new QTableWidgetItem(QString::fromStdString(item->getName()));
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        menuTable->setItem(i, 1, nameItem);
+
+        QTableWidgetItem *catItem = new QTableWidgetItem(QString::fromStdString(item->getCategory()));
+        catItem->setFlags(catItem->flags() & ~Qt::ItemIsEditable);
+        menuTable->setItem(i, 2, catItem);
+
+        QTableWidgetItem *priceItem = new QTableWidgetItem(QString("$%1").arg(item->getPrice(), 0, 'f', 2));
+        priceItem->setFlags(priceItem->flags() | Qt::ItemIsEditable);
+        menuTable->setItem(i, 3, priceItem);
         
         QString details = "";
         if (auto foodItem = std::dynamic_pointer_cast<FoodItem>(item)) {
@@ -356,8 +375,14 @@ void MainWindow::refreshMenuTable() {
                       .arg(QString::fromStdString(bevItem->getBeverageType()))
                       .arg(bevItem->getIsCarbonated() ? "Yes" : "No");
         }
-        menuTable->setItem(i, 4, new QTableWidgetItem(details));
+        
+        QTableWidgetItem *detailsItem = new QTableWidgetItem(details);
+        detailsItem->setFlags(detailsItem->flags() & ~Qt::ItemIsEditable);
+        menuTable->setItem(i, 4, detailsItem);
     }
+
+    // Re-connect the signal
+    connect(menuTable, &QTableWidget::itemChanged, this, &MainWindow::onMenuItemChanged);
 }
 
 void MainWindow::onAddItemClicked() {
@@ -666,7 +691,9 @@ void MainWindow::applyTheme(bool dark) {
             "QMenu::item:selected { background-color: #35354a; color: #63b3ed; }"
             "QTableWidget { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; gridline-color: #3f3f5a; selection-background-color: #3182ce; selection-color: white; }"
             "QTableWidget::item { padding: 5px; }"
+            "QHeaderView { background-color: #262635; }"
             "QHeaderView::section { background-color: #35354a; color: #63b3ed; padding: 6px; font-weight: bold; border: 1px solid #262635; }"
+            "QTableCornerButton::section { background-color: #35354a; border: 1px solid #262635; }"
             "QTextEdit { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; color: #a0aec0; font-family: 'Courier New', monospace; font-size: 13px; }"
             "QPushButton { background-color: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }"
             "QPushButton:hover { background-color: #4299e1; }"
@@ -677,6 +704,9 @@ void MainWindow::applyTheme(bool dark) {
             "QPushButton#addMenuBtn { background-color: #38a169; }"
             "QPushButton#addMenuBtn:hover { background-color: #48bb78; }"
             "QPushButton#addMenuBtn:pressed { background-color: #2f855a; }"
+            "QPushButton#deleteMenuBtn { background-color: #e53e3e; }"
+            "QPushButton#deleteMenuBtn:hover { background-color: #fc8181; }"
+            "QPushButton#deleteMenuBtn:pressed { background-color: #c53030; }"
             "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; color: white; }"
             "QLabel { font-weight: 500; }"
             "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #63b3ed; margin-bottom: 10px; }"
@@ -693,7 +723,9 @@ void MainWindow::applyTheme(bool dark) {
             "QMenu::item:selected { background-color: #e2e8f0; color: #3182ce; }"
             "QTableWidget { background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; gridline-color: #edf2f7; selection-background-color: #ebf8ff; selection-color: #2b6cb0; }"
             "QTableWidget::item { padding: 5px; }"
+            "QHeaderView { background-color: #ffffff; }"
             "QHeaderView::section { background-color: #edf2f7; color: #2b6cb0; padding: 6px; font-weight: bold; border: 1px solid #cbd5e0; }"
+            "QTableCornerButton::section { background-color: #edf2f7; border: 1px solid #cbd5e0; }"
             "QTextEdit { background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 6px; color: #4a5568; font-family: 'Courier New', monospace; font-size: 13px; }"
             "QPushButton { background-color: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }"
             "QPushButton:hover { background-color: #4299e1; }"
@@ -704,6 +736,9 @@ void MainWindow::applyTheme(bool dark) {
             "QPushButton#addMenuBtn { background-color: #38a169; }"
             "QPushButton#addMenuBtn:hover { background-color: #48bb78; }"
             "QPushButton#addMenuBtn:pressed { background-color: #2f855a; }"
+            "QPushButton#deleteMenuBtn { background-color: #e53e3e; }"
+            "QPushButton#deleteMenuBtn:hover { background-color: #fc8181; }"
+            "QPushButton#deleteMenuBtn:pressed { background-color: #c53030; }"
             "QSpinBox, QDoubleSpinBox, QComboBox { background-color: #ffffff; border: 1px solid #cbd5e0; border-radius: 5px; padding: 4px; color: #2d3748; }"
             "QLabel { font-weight: 500; }"
             "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #2b6cb0; margin-bottom: 10px; }"
@@ -718,4 +753,86 @@ void MainWindow::onDarkThemeTriggered() {
 
 void MainWindow::onLightThemeTriggered() {
     applyTheme(false);
+}
+
+void MainWindow::onDeleteMenuItemClicked() {
+    int selectedRow = menuTable->currentRow();
+    if (selectedRow < 0) {
+        QMessageBox::warning(this, "Selection Error", "Please select a menu item to delete.");
+        return;
+    }
+
+    std::string itemID = menuTable->item(selectedRow, 0)->text().toStdString();
+    std::string itemName = menuTable->item(selectedRow, 1)->text().toStdString();
+
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Confirm Deletion",
+        QString("Are you sure you want to permanently delete '%1' (ID: %2) from the menu?")
+            .arg(QString::fromStdString(itemName))
+            .arg(QString::fromStdString(itemID)),
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply == QMessageBox::Yes) {
+        // Remove from local vector
+        for (auto it = menuItems.begin(); it != menuItems.end(); ++it) {
+            if ((*it)->getItemID() == itemID) {
+                menuItems.erase(it);
+                break;
+            }
+        }
+
+        // Remove from RestaurantManager
+        manager.removeMenuItem(itemID);
+
+        // Save menu persistently
+        std::string saveErr;
+        if (!MenuFileIO::saveMenu("menu.txt", menuItems, &saveErr)) {
+            QMessageBox::critical(this, "Save Error", QString::fromStdString(saveErr));
+        }
+
+        // Refresh UI table
+        refreshMenuTable();
+        QMessageBox::information(this, "Success", "Menu item deleted successfully!");
+    }
+}
+
+void MainWindow::onMenuItemChanged(QTableWidgetItem *item) {
+    if (!item) return;
+    int col = item->column();
+    if (col == 3) { // Price column
+        int row = item->row();
+        if (row < 0 || row >= static_cast<int>(menuItems.size())) return;
+
+        QString txt = item->text().trimmed();
+        if (txt.startsWith('$')) {
+            txt = txt.mid(1);
+        }
+
+        bool ok = false;
+        double newPrice = txt.toDouble(&ok);
+        if (ok && newPrice >= 0.0) {
+            // Update price in memory using virtual updatePrice
+            menuItems[row]->updatePrice(newPrice);
+
+            // Re-save menu persistently
+            std::string saveErr;
+            if (!MenuFileIO::saveMenu("menu.txt", menuItems, &saveErr)) {
+                QMessageBox::critical(this, "Save Error", QString::fromStdString(saveErr));
+            }
+
+            // Recalculate bill for active table to update order total in real time
+            auto table = manager.getTable(currentTableNumber);
+            if (table && table->hasActiveOrder() && !table->getCurrentOrder()->isEmpty()) {
+                onCalculateBillClicked();
+            }
+        } else {
+            QMessageBox::warning(this, "Invalid Price", "Please enter a valid positive decimal number for the price.");
+        }
+
+        // Reformat text to display nicely (e.g. $12.99)
+        disconnect(menuTable, &QTableWidget::itemChanged, this, &MainWindow::onMenuItemChanged);
+        item->setText(QString("$%1").arg(menuItems[row]->getPrice(), 0, 'f', 2));
+        connect(menuTable, &QTableWidget::itemChanged, this, &MainWindow::onMenuItemChanged);
+    }
 }
