@@ -28,6 +28,10 @@ private slots:
   void onClearBillClicked();
   void onTableChanged(int index);
   void onAddMenuItemClicked();
+  void onImportMenuTriggered();
+  void onExportMenuTriggered();
+  void onImportReceiptTriggered();
+  void onExportReceiptTriggered();
 
 private:
   void setupUI();

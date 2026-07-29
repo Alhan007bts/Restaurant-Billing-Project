@@ -9,11 +9,16 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <sstream>
+#include <fstream>
 #include <QDialog>
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QDialogButtonBox>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QFileDialog>
 
 class AddMenuItemDialog : public QDialog {
 private:
@@ -142,6 +147,11 @@ void MainWindow::setupUI() {
     this->setStyleSheet(
         "QMainWindow { background-color: #1a1a24; }"
         "QWidget { color: #e2e8f0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; }"
+        "QMenuBar { background-color: #262635; color: #e2e8f0; }"
+        "QMenuBar::item { background-color: transparent; padding: 4px 10px; }"
+        "QMenuBar::item:selected { background-color: #35354a; color: #63b3ed; }"
+        "QMenu { background-color: #262635; color: #e2e8f0; border: 1px solid #3f3f5a; }"
+        "QMenu::item:selected { background-color: #35354a; color: #63b3ed; }"
         "QTableWidget { background-color: #262635; border: 1px solid #3f3f5a; border-radius: 6px; gridline-color: #3f3f5a; }"
         "QTableWidget::item { padding: 5px; }"
         "QHeaderView::section { background-color: #35354a; color: #63b3ed; padding: 6px; font-weight: bold; border: 1px solid #262635; }"
@@ -160,6 +170,34 @@ void MainWindow::setupUI() {
         "QLabel#titleLabel { font-size: 24px; font-weight: bold; color: #63b3ed; margin-bottom: 10px; }"
         "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: #48bb78; }"
     );
+
+    // Menu Bar Setup
+    QMenuBar *mBar = this->menuBar();
+    QMenu *fileMenu = mBar->addMenu("&File");
+
+    QAction *importMenuAct = new QAction("&Import Menu...", this);
+    connect(importMenuAct, &QAction::triggered, this, &MainWindow::onImportMenuTriggered);
+    fileMenu->addAction(importMenuAct);
+
+    QAction *exportMenuAct = new QAction("&Export Menu...", this);
+    connect(exportMenuAct, &QAction::triggered, this, &MainWindow::onExportMenuTriggered);
+    fileMenu->addAction(exportMenuAct);
+
+    fileMenu->addSeparator();
+
+    QAction *importReceiptAct = new QAction("Import &Receipt...", this);
+    connect(importReceiptAct, &QAction::triggered, this, &MainWindow::onImportReceiptTriggered);
+    fileMenu->addAction(importReceiptAct);
+
+    QAction *exportReceiptAct = new QAction("Export R&eceipt...", this);
+    connect(exportReceiptAct, &QAction::triggered, this, &MainWindow::onExportReceiptTriggered);
+    fileMenu->addAction(exportReceiptAct);
+
+    fileMenu->addSeparator();
+
+    QAction *exitAct = new QAction("E&xit", this);
+    connect(exitAct, &QAction::triggered, this, &QWidget::close);
+    fileMenu->addAction(exitAct);
 
     // Main layout structures
     QWidget *centralWidget = new QWidget(this);
@@ -557,4 +595,68 @@ void MainWindow::onAddMenuItemClicked() {
         // Refresh UI table
         refreshMenuTable();
     }
+}
+
+void MainWindow::onImportMenuTriggered() {
+    QString fileName = QFileDialog::getOpenFileName(this, "Import Menu File", "", "Text Files (*.txt);;All Files (*)");
+    if (fileName.isEmpty()) return;
+
+    std::string err;
+    std::vector<std::shared_ptr<MenuItem>> newItems;
+    if (MenuFileIO::loadMenu(fileName.toStdString(), newItems, &err)) {
+        menuItems = std::move(newItems);
+        manager.replaceMenuItems(menuItems);
+        refreshMenuTable();
+        QMessageBox::information(this, "Success", "Menu imported successfully!");
+    } else {
+        QMessageBox::critical(this, "Import Error", QString::fromStdString(err));
+    }
+}
+
+void MainWindow::onExportMenuTriggered() {
+    QString fileName = QFileDialog::getSaveFileName(this, "Export Menu File", "menu_export.txt", "Text Files (*.txt);;All Files (*)");
+    if (fileName.isEmpty()) return;
+
+    std::string err;
+    if (MenuFileIO::saveMenu(fileName.toStdString(), menuItems, &err)) {
+        QMessageBox::information(this, "Success", "Menu exported successfully!");
+    } else {
+        QMessageBox::critical(this, "Export Error", QString::fromStdString(err));
+    }
+}
+
+void MainWindow::onImportReceiptTriggered() {
+    QString fileName = QFileDialog::getOpenFileName(this, "Import Receipt File", "", "Text Files (*.txt);;All Files (*)");
+    if (fileName.isEmpty()) return;
+
+    std::ifstream file(fileName.toStdString());
+    if (!file) {
+        QMessageBox::critical(this, "Error", "Could not open receipt file for reading.");
+        return;
+    }
+
+    std::stringstream ss;
+    ss << file.rdbuf();
+    receiptDisplay->setPlainText(QString::fromStdString(ss.str()));
+    QMessageBox::information(this, "Success", "Receipt loaded successfully!");
+}
+
+void MainWindow::onExportReceiptTriggered() {
+    QString receiptText = receiptDisplay->toPlainText();
+    if (receiptText.isEmpty()) {
+        QMessageBox::warning(this, "Empty Receipt", "There is no receipt to export.");
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(this, "Export Receipt File", "receipt.txt", "Text Files (*.txt);;All Files (*)");
+    if (fileName.isEmpty()) return;
+
+    std::ofstream file(fileName.toStdString());
+    if (!file) {
+        QMessageBox::critical(this, "Error", "Could not open file for writing.");
+        return;
+    }
+
+    file << receiptText.toStdString();
+    QMessageBox::information(this, "Success", "Receipt exported successfully!");
 }

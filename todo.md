@@ -14,6 +14,7 @@
 - [x] Implement classes to handle customer orders and tables
 - [x] Implement main manager class to organize data and perform data analytics
 - [x] Implement File I/O functions to safely load and save menu items from/to a text file
+  # * *Note: Please check comments in `MenuFileIO.cpp` to transition the file format from pipe-delimited text to standard CSV.*
 - [x] Utilize smart pointers to handle memory automatically without leaks
 - [x] Push codebase changes to the repository for UI integration
 
