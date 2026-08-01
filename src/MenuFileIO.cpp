@@ -1,3 +1,4 @@
+// Implements safe menu serialization and parsing.
 #include "MenuFileIO.h"
 #include "FoodItem.h"
 #include "BeverageItem.h"
@@ -5,7 +6,9 @@
 #include <iomanip>
 #include <sstream>
 
+// Keep parsing helper functions private to this file.
 namespace {
+// Split one text line into delimiter-separated fields.
 std::vector<std::string> split(const std::string& line, char delimiter) {
     std::vector<std::string> parts;
     std::stringstream stream(line);
@@ -14,6 +17,7 @@ std::vector<std::string> split(const std::string& line, char delimiter) {
     return parts;
 }
 
+// Convert supported text values into a Boolean.
 bool parseBool(const std::string& value, bool& result) {
     if (value == "1" || value == "true" || value == "TRUE") {
         result = true;
@@ -27,18 +31,22 @@ bool parseBool(const std::string& value, bool& result) {
 }
 }
 
+// Save food and beverage records using a pipe-delimited format.
 bool MenuFileIO::saveMenu(const std::string& fileName,
                           const std::vector<std::shared_ptr<MenuItem>>& menuItems,
                           std::string* errorMessage) {
+    // Open the output file and report failure safely.
     std::ofstream file(fileName);
     if (!file) {
         if (errorMessage) *errorMessage = "Could not open file for writing: " + fileName;
         return false;
     }
 
+    // Write the file header and fixed decimal formatting.
     file << "TYPE|ID|NAME|CATEGORY|PRICE|EXTRA1|EXTRA2|EXTRA3\n";
     file << std::fixed << std::setprecision(2);
 
+    // Write each supported derived menu-item type.
     for (const auto& item : menuItems) {
         if (!item) continue;
 
@@ -57,6 +65,7 @@ bool MenuFileIO::saveMenu(const std::string& fileName,
         }
     }
 
+    // Confirm that all file output completed successfully.
     if (!file.good()) {
         if (errorMessage) *errorMessage = "An error occurred while writing: " + fileName;
         return false;
@@ -64,19 +73,23 @@ bool MenuFileIO::saveMenu(const std::string& fileName,
     return true;
 }
 
+// Load and validate food and beverage records from a text file.
 bool MenuFileIO::loadMenu(const std::string& fileName,
                           std::vector<std::shared_ptr<MenuItem>>& menuItems,
                           std::string* errorMessage) {
+    // Open the input file and report failure safely.
     std::ifstream file(fileName);
     if (!file) {
         if (errorMessage) *errorMessage = "Could not open file for reading: " + fileName;
         return false;
     }
 
+    // Build a temporary menu before replacing existing data.
     std::vector<std::shared_ptr<MenuItem>> loaded;
     std::string line;
     int lineNumber = 0;
 
+    // Read, validate, and convert each data record.
     while (std::getline(file, line)) {
         ++lineNumber;
         if (line.empty() || line.rfind("TYPE|", 0) == 0) continue;
@@ -87,6 +100,7 @@ bool MenuFileIO::loadMenu(const std::string& fileName,
             return false;
         }
 
+        // Convert numeric fields and create the correct derived object.
         try {
             const double price = std::stod(fields[4]);
             bool flag = false;
@@ -112,6 +126,7 @@ bool MenuFileIO::loadMenu(const std::string& fileName,
         }
     }
 
+    // Replace the menu only after the full file loads successfully.
     menuItems = std::move(loaded);
     return true;
 }

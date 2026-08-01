@@ -104,13 +104,11 @@ double FoodItem::calculateSpecialOfferPrice() const {
 }
 
 // Update price with convenience fee for food items
-// NOTE FOR SYED: Please remove the convenienceFee logic here so that prices
+// NOTE FOR SYED: Please remove the convenienceFee logic here so that prices(removed)
 // updated through updatePrice match the input newPrice exactly without adding
 // hidden surcharges.
 void FoodItem::updatePrice(double newPrice) {
-  // Food items: add convenience fee
-  double convenienceFee = 0.50;
-  MenuItem::setPrice(newPrice + convenienceFee);
+    MenuItem::setPrice(newPrice);
 }
 
 // ==========================
