@@ -32,6 +32,17 @@ set(SOURCES
     src/RestaurantManager.cpp
     src/MenuFileIO.h
     src/MenuFileIO.cpp
+    src/Order.h
+    src/Order.cpp
+    src/DineInOrder.h
+    src/DineInOrder.cpp
+    src/Bill.h
+    src/Bill.cpp
+    src/Payment.h
+    src/Payment.cpp
+    src/AnalyticsEngine.h
+    src/DataManager.h
+    src/DataManager.cpp
 )
 
 # Create the executable
