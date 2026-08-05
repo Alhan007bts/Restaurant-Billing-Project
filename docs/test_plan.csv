@@ -1,4 +1,4 @@
-﻿Test Case,Step,Action,Expected Result,Passed? (Yes/No),Comments
+Test Case,Step,Action,Expected Result,Passed? (Yes/No),Comments
 TC-1: Dining Table Order Isolation,1,Select Table 1 from the dining table dropdown at the top.,Table 1 is selected.,,
 ,2,Select Margherita Pizza in the Menu list.,Margherita Pizza is selected.,,
 ,3,Set quantity to 2 using the ▲ spinner button.,Quantity displays 2.,,
@@ -42,4 +42,19 @@ TC-7: Menu File Import & Export,1,Click File -> Export Menu.,File dialog opens.,
 ,3,Double-click and change several prices in the Menu Items table.,Prices display changed values in the UI.,,
 ,4,Click File -> Import Menu.,File dialog opens.,,
 ,5,Select the saved test_menu.txt file.,Menu is loaded.,,
-,6,Verify prices in the Menu Items table.,All changed prices restore back to their original exported values.
+,6,Verify prices in the Menu Items table.,All changed prices restore back to their original exported values.,,
+TC-8: Cash Change & Card Auto-Exact,1,Select Table 1, add Margherita Pizza, click Generate Receipt.,Bill total is generated in Billing tab.,,
+,2,Go to Payments tab and select the bill.,Bill ID shows in selector.,,
+,3,Select Card as Payment Method.,Card option selected.,,
+,4,Verify Payment Amount spinner state.,Spinner is disabled and shows exact bill total.,,
+,5,Select Cash as Payment Method.,Cash option selected.,,
+,6,Verify Payment Amount spinner state.,Spinner is enabled for manual entry.,,
+,7,Change Payment Amount spinner to less than total and click Process.,Warning dialog "Insufficient Amount" appears.,,
+,8,Click OK on warning, set amount to greater than total (e.g. $14.00), click Process.,Confirmation dialog shows Bill Total, Cash Paid, and Change.,,
+,9,Click Yes to process payment.,Payment processes successfully popup appears.,,
+TC-9: UI Clearing & Dated Reports,1,Click OK on payment processed successfully popup.,Popup closes.,,
+,2,Verify Billing and Payments tab UIs.,Billing receipt/total reset; Payments receipt display clears.,,
+,3,Open data/ directory in file explorer.,Directory contains newly created files.,,
+,4,Verify data/receipt_PAY-100X_YYYY-MM-DD.txt.,File contains processed receipt with Cash Given and Change.,,
+,5,Verify data/payments_YYYY-MM-DD.txt.,File contains latest payments log.,,
+,6,Verify data/analytics_YYYY-MM-DD.txt.,File contains latest daily sales analytics report.

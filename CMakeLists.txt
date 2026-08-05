@@ -16,37 +16,40 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 # Source and header files
 set(SOURCES
     src/main_qt.cpp
-    src/MainWindow.h
+    include/MainWindow.h
     src/MainWindow.cpp
-    src/MenuItem.h
+    include/MenuItem.h
     src/MenuItem.cpp
-    src/FoodItem.h
+    include/FoodItem.h
     src/FoodItem.cpp
-    src/BeverageItem.h
+    include/BeverageItem.h
     src/BeverageItem.cpp
-    src/CustomerOrder.h
+    include/CustomerOrder.h
     src/CustomerOrder.cpp
-    src/DiningTable.h
+    include/DiningTable.h
     src/DiningTable.cpp
-    src/RestaurantManager.h
+    include/RestaurantManager.h
     src/RestaurantManager.cpp
-    src/MenuFileIO.h
+    include/MenuFileIO.h
     src/MenuFileIO.cpp
-    src/Order.h
+    include/Order.h
     src/Order.cpp
-    src/DineInOrder.h
+    include/DineInOrder.h
     src/DineInOrder.cpp
-    src/Bill.h
+    include/Bill.h
     src/Bill.cpp
-    src/Payment.h
+    include/Payment.h
     src/Payment.cpp
-    src/AnalyticsEngine.h
-    src/DataManager.h
+    include/AnalyticsEngine.h
+    include/DataManager.h
     src/DataManager.cpp
 )
 
 # Create the executable
 add_executable(restaurant_billing_qt ${SOURCES})
+
+# Target include directories (compiler will search the include/ directory for header files)
+target_include_directories(restaurant_billing_qt PRIVATE include)
 
 # Link Qt 6 libraries
 target_link_libraries(restaurant_billing_qt PRIVATE Qt6::Widgets)

@@ -110,6 +110,41 @@ cmake --build build
 
 ---
 
+### Test Case 8: Cash Change & Card Auto-Exact Payments
+**Objective:** Verify that Cash payments calculate change correctly and Card payments disable editing and default to the exact bill total.
+1. Add items to an order and click Generate Receipt to create a bill.
+2. Go to the Payments tab.
+3. Select the bill.
+4. Select Card as the Payment Method.
+5. Verify that the Payment Amount ($) spinner is disabled (uneditable) and automatically set to the exact total of the bill.
+6. Select Cash as the Payment Method.
+7. Verify that the Payment Amount ($) spinner becomes enabled (editable).
+8. Change the Payment Amount ($) to an amount less than the bill total, then click Process Payment.
+9. Verify that a warning dialog appears stating "Payment amount is less than the bill total." and the payment does not process.
+10. Click OK on the warning, then change the Payment Amount ($) to a value greater than the bill total (e.g. if total is $13.84, enter $14.00) and click Process Payment.
+11. Verify that the confirmation dialog correctly displays:
+    - Bill Total: $13.84
+    - Cash Paid: $14.00
+    - Change: $0.16
+12. Click Yes to process.
+
+---
+
+### Test Case 9: UI Auto-Clearing and Auto-Generated Dated Reports
+**Objective:** Verify that the UI clears automatically after a successful payment and that the receipts, payments log, and analytics reports are generated as dated .txt files.
+1. Complete Test Case 8 by clicking Yes to process the payment.
+2. Click OK on the "Payment processed successfully!" dialog.
+3. Verify that:
+   - In the Billing tab: the receipt text area is cleared, the total label displays "Grand Total: $0.00", and the large bill warning is hidden.
+   - In the Payments tab: the payment receipt display is cleared.
+4. Navigate to the project's `data/` directory.
+5. Verify that the following files exist (where `YYYY-MM-DD` is the current date):
+   - `data/receipt_PAY-100X_YYYY-MM-DD.txt`: Contains the processed payment receipt showing the Cash Given and Change.
+   - `data/payments_YYYY-MM-DD.txt`: Contains the line listing the current payments data.
+   - `data/analytics_YYYY-MM-DD.txt`: Contains the daily sales total, average bill, open/paid/cancelled order counts, and popular item counts.
+
+---
+
 ## Verification Checklist
 
 | Test Case | Description | Expected Result | Status (Pass/Fail) |
@@ -121,3 +156,6 @@ cmake --build build
 | TC-5 | Calculations | Subtotal, discounts, preparation fees, and taxes sum up correctly | [ ] |
 | TC-6 | Theme & Rounding | Banner left accent displays; 12px rounded corners match | [ ] |
 | TC-7 | Menu Import/Export | Menu configurations export and restore correctly | [ ] |
+| TC-8 | Cash Change / Card Exact | Cash calculates change; Card disables and locks payment amount spinner | [ ] |
+| TC-9 | UI Clearing / Dated Files | Billing & Payment UI screens clear on success; saves dated receipts/reports | [ ] |
+
