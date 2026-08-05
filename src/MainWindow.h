@@ -51,6 +51,7 @@ private slots:
 
   // New Slots for PDF specs
   void onSearchFilterChanged();
+  void onOrderSearchFilterChanged();
   void onProcessPaymentClicked();
   void onSaveDataTriggered();
   void onLoadDataTriggered();
@@ -96,6 +97,9 @@ private:
 
   // Tab 2: Orders Widgets
   QTableWidget *orderTable;
+  QTableWidget *orderMenuTable;
+  QLineEdit *orderSearchEdit;
+  QComboBox *orderCategoryFilterCombo;
   QComboBox *tableComboBox;
   QSpinBox *quantitySpinner;
   QPushButton *addButton;

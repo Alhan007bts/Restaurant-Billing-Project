@@ -328,7 +328,7 @@ void MainWindow::setupUI() {
   });
 }
 
-// 1. Menu Management Tab
+// 1. Menu Management Tab (Editing, addition, deletion of items)
 void MainWindow::setupMenuTab(QWidget* tab) {
   QVBoxLayout *layout = new QVBoxLayout(tab);
 
@@ -375,11 +375,13 @@ void MainWindow::setupMenuTab(QWidget* tab) {
   connect(categoryFilterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onSearchFilterChanged);
 }
 
-// 2. Orders Tab
+// 2. Orders Tab: Select table, search menu, select quantity, add to active order list
 void MainWindow::setupOrdersTab(QWidget* tab) {
   QHBoxLayout *layout = new QHBoxLayout(tab);
+
+  // Left Pane: Menu selection specifically integrated into the same view
   QVBoxLayout *leftPane = new QVBoxLayout();
-  layout->addLayout(leftPane, 3);
+  layout->addLayout(leftPane, 3); // 3/5 ratio
 
   // Table Selector
   QHBoxLayout *tableSelectLayout = new QHBoxLayout();
@@ -392,16 +394,33 @@ void MainWindow::setupOrdersTab(QWidget* tab) {
   tableSelectLayout->addWidget(tableComboBox);
   leftPane->addLayout(tableSelectLayout);
 
-  leftPane->addWidget(new QLabel("Current Order Items:", tab));
-  orderTable = new QTableWidget(tab);
-  orderTable->setColumnCount(4);
-  orderTable->setHorizontalHeaderLabels({"Name", "Price", "Qty", "Subtotal"});
-  orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-  orderTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-  orderTable->setSelectionMode(QAbstractItemView::SingleSelection);
-  leftPane->addWidget(orderTable);
+  // Search & Category Filters for ordering menu
+  QHBoxLayout *filterLayout = new QHBoxLayout();
+  filterLayout->addWidget(new QLabel("Search Item:", tab));
+  orderSearchEdit = new QLineEdit(tab);
+  orderSearchEdit->setPlaceholderText("Type name to search...");
+  filterLayout->addWidget(orderSearchEdit);
 
-  // Quantity spinners and inputs
+  filterLayout->addWidget(new QLabel("Category:", tab));
+  orderCategoryFilterCombo = new QComboBox(tab);
+  orderCategoryFilterCombo->addItem("All Categories", "");
+  orderCategoryFilterCombo->addItem("Appetizer", "Appetizer");
+  orderCategoryFilterCombo->addItem("Main Course", "Main Course");
+  orderCategoryFilterCombo->addItem("Dessert", "Dessert");
+  orderCategoryFilterCombo->addItem("Beverage", "Beverage");
+  filterLayout->addWidget(orderCategoryFilterCombo);
+  leftPane->addLayout(filterLayout);
+
+  // Menu selector table
+  orderMenuTable = new QTableWidget(tab);
+  orderMenuTable->setColumnCount(4);
+  orderMenuTable->setHorizontalHeaderLabels({"Item ID", "Name", "Category", "Price"});
+  orderMenuTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  orderMenuTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+  orderMenuTable->setSelectionMode(QAbstractItemView::SingleSelection);
+  leftPane->addWidget(orderMenuTable);
+
+  // Quantity controls and addition
   QHBoxLayout *qtyLayout = new QHBoxLayout();
   qtyLayout->addWidget(new QLabel("Qty:", tab));
   quantitySpinner = new QSpinBox(tab);
@@ -424,10 +443,31 @@ void MainWindow::setupOrdersTab(QWidget* tab) {
   addButton = new QPushButton("Add to Order", tab);
   connect(addButton, &QPushButton::clicked, this, &MainWindow::onAddItemClicked);
   qtyLayout->addWidget(addButton);
-
   leftPane->addLayout(qtyLayout);
 
-  // Remove Order Button Layout
+  // Connect filter signals for active ordering menu
+  connect(orderSearchEdit, &QLineEdit::textChanged, this, &MainWindow::onOrderSearchFilterChanged);
+  connect(orderCategoryFilterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onOrderSearchFilterChanged);
+
+
+  // Right Pane: Active dining table order lines list
+  QVBoxLayout *rightPane = new QVBoxLayout();
+  layout->addLayout(rightPane, 2); // 2/5 ratio
+
+  rightPane->addWidget(new QLabel("Current Order Items:", tab));
+  orderTable = new QTableWidget(tab);
+  orderTable->setColumnCount(4);
+  orderTable->setHorizontalHeaderLabels({"Name", "Price", "Qty", "Subtotal"});
+  orderTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+  orderTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+  orderTable->setSelectionMode(QAbstractItemView::SingleSelection);
+  rightPane->addWidget(orderTable);
+
+  orderSubtotalLabel = new QLabel("Subtotal: $0.00", tab);
+  orderSubtotalLabel->setObjectName("totalLabel");
+  rightPane->addWidget(orderSubtotalLabel);
+
+  // Order line deletion and clearing
   QHBoxLayout *orderControlLayout = new QHBoxLayout();
   removeButton = new QPushButton("Remove Selected", tab);
   removeButton->setObjectName("removeOrderBtn");
@@ -438,16 +478,7 @@ void MainWindow::setupOrdersTab(QWidget* tab) {
   clearAllBtn->setObjectName("removeOrderBtn");
   connect(clearAllBtn, &QPushButton::clicked, this, &MainWindow::onClearBillClicked);
   orderControlLayout->addWidget(clearAllBtn);
-  leftPane->addLayout(orderControlLayout);
-
-  // Right pane displays quick total summary
-  QVBoxLayout *rightPane = new QVBoxLayout();
-  layout->addLayout(rightPane, 2);
-  rightPane->addWidget(new QLabel("Order Info Panel", tab));
-  orderSubtotalLabel = new QLabel("Subtotal: $0.00", tab);
-  orderSubtotalLabel->setObjectName("totalLabel");
-  rightPane->addWidget(orderSubtotalLabel);
-  rightPane->addStretch();
+  rightPane->addLayout(orderControlLayout);
 }
 
 // 3. Billing Tab
@@ -598,6 +629,7 @@ void MainWindow::populateMenu() {
 void MainWindow::refreshMenuTable() {
   disconnect(menuTable, &QTableWidget::itemChanged, this, &MainWindow::onMenuItemChanged);
 
+  // 1. Populate the Menu management table
   menuTable->setRowCount(menuItems.size());
   for (size_t i = 0; i < menuItems.size(); ++i) {
     auto item = menuItems[i];
@@ -631,10 +663,32 @@ void MainWindow::refreshMenuTable() {
     menuTable->setItem(i, 4, detailsItem);
   }
 
+  // 2. Populate the Orders Selection Menu table
+  orderMenuTable->setRowCount(menuItems.size());
+  for (size_t i = 0; i < menuItems.size(); ++i) {
+    auto item = menuItems[i];
+
+    QTableWidgetItem *idItem = new QTableWidgetItem(QString::fromStdString(item->getItemID()));
+    idItem->setFlags(idItem->flags() & ~Qt::ItemIsEditable);
+    orderMenuTable->setItem(i, 0, idItem);
+
+    QTableWidgetItem *nameItem = new QTableWidgetItem(QString::fromStdString(item->getName()));
+    nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+    orderMenuTable->setItem(i, 1, nameItem);
+
+    QTableWidgetItem *catItem = new QTableWidgetItem(QString::fromStdString(item->getCategory()));
+    catItem->setFlags(catItem->flags() & ~Qt::ItemIsEditable);
+    orderMenuTable->setItem(i, 2, catItem);
+
+    QTableWidgetItem *priceItem = new QTableWidgetItem(QString("$%1").arg(item->getPrice(), 0, 'f', 2));
+    priceItem->setFlags(priceItem->flags() & ~Qt::ItemIsEditable); // Non-editable inside the ordering tab
+    orderMenuTable->setItem(i, 3, priceItem);
+  }
+
   connect(menuTable, &QTableWidget::itemChanged, this, &MainWindow::onMenuItemChanged);
 }
 
-// Handles searching and filtering the Menu list
+// Handles searching and filtering the Menu list inside the Menu tab
 void MainWindow::onSearchFilterChanged() {
   QString filterText = searchEdit->text().trimmed().toLower();
   QString filterCategory = categoryFilterCombo->currentData().toString();
@@ -651,15 +705,41 @@ void MainWindow::onSearchFilterChanged() {
   }
 }
 
+// Handles searching and filtering the Menu list inside the Orders tab
+void MainWindow::onOrderSearchFilterChanged() {
+  QString filterText = orderSearchEdit->text().trimmed().toLower();
+  QString filterCategory = orderCategoryFilterCombo->currentData().toString();
+
+  for (int r = 0; r < orderMenuTable->rowCount(); ++r) {
+    bool matchesName = orderMenuTable->item(r, 1)->text().toLower().contains(filterText);
+    bool matchesCategory = filterCategory.isEmpty() || (orderMenuTable->item(r, 2)->text() == filterCategory);
+
+    if (matchesName && matchesCategory) {
+      orderMenuTable->showRow(r);
+    } else {
+      orderMenuTable->hideRow(r);
+    }
+  }
+}
+
 // Add Item to active Dining Table order
 void MainWindow::onAddItemClicked() {
-  int selectedRow = menuTable->currentRow();
+  int selectedRow = orderMenuTable->currentRow();
   if (selectedRow < 0) {
-    QMessageBox::warning(this, "No Selection", "Please select a menu item from the list.");
+    QMessageBox::warning(this, "No Selection", "Please select a menu item from the select menu list.");
     return;
   }
 
-  auto selectedItem = menuItems[selectedRow];
+  std::string itemID = orderMenuTable->item(selectedRow, 0)->text().toStdString();
+  std::shared_ptr<MenuItem> selectedItem = nullptr;
+  for (const auto& item : menuItems) {
+    if (item && item->getItemID() == itemID) {
+      selectedItem = item;
+      break;
+    }
+  }
+
+  if (!selectedItem) return;
   int qty = quantitySpinner->value();
 
   // Validate limits (Maximum quantity 100 per item)
