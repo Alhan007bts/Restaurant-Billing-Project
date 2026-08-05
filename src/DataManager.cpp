@@ -85,7 +85,8 @@ bool DataManager::saveData(const std::string& directoryPath,
         pFile << payment.getPaymentID() << "|"
               << payment.getBillID() << "|"
               << payment.getPaymentMethod() << "|"
-              << payment.getAmount() << "\n";
+              << payment.getAmount() << "|"
+              << payment.getCashGiven() << "\n";
     }
     pFile.close();
 
@@ -172,8 +173,9 @@ bool DataManager::loadData(const std::string& directoryPath,
             std::string billID = parts[1];
             std::string method = parts[2];
             double amount = std::stod(parts[3]);
+            double cashGiven = (parts.size() >= 5) ? std::stod(parts[4]) : amount;
 
-            tempPayments.push_back(Payment(paymentID, billID, method, amount));
+            tempPayments.push_back(Payment(paymentID, billID, method, amount, cashGiven));
         }
         pFile.close();
     }

@@ -53,6 +53,7 @@ private slots:
   void onSearchFilterChanged();
   void onOrderSearchFilterChanged();
   void onProcessPaymentClicked();
+  void onPaymentBillOrMethodChanged();
   void onSaveDataTriggered();
   void onLoadDataTriggered();
 
