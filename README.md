@@ -23,8 +23,9 @@ To compile and run this application, you must have CMake and Qt 6 SDK (Core, Gui
    *(Note: Ensure your WSL has GUI support enabled, i.e., WSLg on Windows 11/10, or an X Server running on your host machine.)*
 
 2. **Configure & Build:**
+   From the repository root folder:
    ```bash
-   cmake -B build -S .
+   cmake -B build -S Restaurant-Billing-Project
    cmake --build build
    ```
 
@@ -45,7 +46,7 @@ Visual Studio natively supports opening and building CMake projects.
 
 2. **Open the Project in Visual Studio:**
    - Open Visual Studio.
-   - Go to **File** -> **Open** -> **Folder...** and select the `Restaurant-Billing-Project` root directory.
+   - Go to **File** -> **Open** -> **Folder...** and select the `Restaurant-Billing-Project` subdirectory.
    - Visual Studio will automatically detect `CMakeLists.txt` and start configuring the project.
 
 3. **Configure the Qt Path:**
@@ -61,21 +62,37 @@ Visual Studio natively supports opening and building CMake projects.
 
 ---
 
+## Features Added
+
+* **Cash Change Calculation**: Toggling to **Cash** enables manual payment amount entry; handles validation (insufficient cash checks) and computes/displays change in the confirmation dialog.
+* **Card Exact-Amount Lock**: Toggling to **Card** automatically disables the payment input field and locks the payment amount to the exact bill total.
+* **UI Auto-Clearing**: Processing a payment automatically resets and clears the Billing tab receipt text, the grand total label, and the Payment tab status panels for the next table.
+* **Dated Logs & Reports**: Auto-saves a dated receipt `receipt_<PaymentID>_YYYY-MM-DD.txt`, a dated database payments summary `payments_YYYY-MM-DD.txt`, and a daily financial sales and statistics report `analytics_YYYY-MM-DD.txt` under the `data/` directory.
+
+---
+
 ## Project Directory Structure
 
 ```
-├── CMakeLists.txt         # CMake compilation rules
-├── data/
-│   └── menu.txt           # Persistent food and beverage items database
-├── src/                   # C++ source and header files
-│   ├── main_qt.cpp        # Application entry point
-│   ├── MainWindow.h/cpp   # BiteKing UI logic and styles
-│   ├── CustomerOrder.h/cpp# Order management model
-│   ├── DiningTable.h/cpp  # Table layout and bill calculation
-│   ├── FoodItem.h/cpp     # Food menu items model
-│   ├── BeverageItem.h/cpp # Beverage menu items model
+├── CMakeLists.txt              # CMake compilation rules
+├── include/                    # C++ Header files (.h)
+│   ├── AnalyticsEngine.h       # Sales stats calculator class
+│   ├── MainWindow.h            # Main UI window declarations
+│   ├── MenuItem.h / FoodItem.h # Menu item classes
+│   ├── ...
+├── src/                        # C++ Source files (.cpp)
+│   ├── main_qt.cpp             # Application entry point
+│   ├── MainWindow.cpp          # UI controller implementation
+│   ├── Payment.cpp / Bill.cpp  # Billing and payment logic
 │   └── ...
-├── test_plan.xlsx         # Styled ONLYOFFICE/Excel testing spreadsheet
-├── test_plan.md           # Step-by-step test cases
+├── data/                       # Files database directory
+│   ├── menu.txt                # Persistent menu database
+│   ├── payments.txt            # Persistent payments database
+│   └── ...
+├── docs/                       # Project documentation and test matrices
+│   ├── todo.md                 # Task tracker
+│   ├── test_plan.md / .csv     # Step-by-step test cases
+│   ├── test_plan.xlsx          # Interactive validation spreadsheet
+│   └── responsibilities.md     # Team task assignments split
 └── README.md              # This build guide
 ```
