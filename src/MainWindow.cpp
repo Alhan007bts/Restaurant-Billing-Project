@@ -1288,10 +1288,45 @@ void MainWindow::onProcessPaymentClicked() {
       }
     }
 
+    // Auto-create dated files
+    QString dateStr = QDateTime::currentDateTime().toString("yyyy-MM-dd");
+    QDir().mkpath("data");
+
+    // Write individual payment receipt
+    QString receiptFileName = QString("data/receipt_%1_%2.txt")
+                                  .arg(QString::fromStdString(paymentID))
+                                  .arg(dateStr);
+    std::ofstream rFile(receiptFileName.toStdString());
+    if (rFile) {
+      rFile << payment.displayPayment();
+      rFile.close();
+    }
+
+    // Write current payments log with date
+    QString paymentsFileName = QString("data/payments_%1.txt").arg(dateStr);
+    std::ofstream pFile(paymentsFileName.toStdString());
+    if (pFile) {
+      pFile << std::fixed << std::setprecision(2);
+      for (const auto &p : restaurantPayments) {
+        pFile << p.getPaymentID() << "|"
+              << p.getBillID() << "|"
+              << p.getPaymentMethod() << "|"
+              << p.getAmount() << "|"
+              << p.getCashGiven() << "\n";
+      }
+      pFile.close();
+    }
+
     paymentReceiptDisplay->setPlainText(
         QString::fromStdString(payment.displayPayment()));
     QMessageBox::information(this, "Success",
                              "Payment processed successfully!");
+
+    // Clear/reset Billing and Payments UI elements
+    receiptDisplay->clear();
+    totalLabel->setText("Grand Total: $0.00");
+    largeBillWarningLabel->hide();
+    paymentReceiptDisplay->clear();
 
     unsavedChanges = true;
     refreshPaymentsBillCombo();
@@ -1412,6 +1447,40 @@ void MainWindow::updateAnalyticsDisplay() {
     popularItemsList->addItem(QString("%1: %2 sold")
                                   .arg(QString::fromStdString(itemName))
                                   .arg(pair.second));
+  }
+
+  // Auto-generate dated daily analytics file
+  QString dateStr = QDateTime::currentDateTime().toString("yyyy-MM-dd");
+  QDir().mkpath("data");
+  QString analyticsFileName = QString("data/analytics_%1.txt").arg(dateStr);
+  std::ofstream aFile(analyticsFileName.toStdString());
+  if (aFile) {
+    aFile << "========================================\n";
+    aFile << "          DAILY SALES REPORT            \n";
+    aFile << "          Date: " << dateStr.toStdString() << "\n";
+    aFile << "========================================\n";
+    aFile << std::fixed << std::setprecision(2);
+    aFile << "Daily Sales Total    : $" << totalSales << "\n";
+    aFile << "Average Bill Amount  : $" << avgBill << "\n";
+    aFile << "----------------------------------------\n";
+    aFile << "Orders Status Summary:\n";
+    aFile << "  Open Orders        : " << openCount << "\n";
+    aFile << "  Paid Orders        : " << paidCount << "\n";
+    aFile << "  Cancelled Orders   : " << cancelledCount << "\n";
+    aFile << "----------------------------------------\n";
+    aFile << "Popular Menu Items:\n";
+    for (const auto &pair : popularVec) {
+      std::string itemName = pair.first;
+      for (const auto &item : menuItems) {
+        if (item && item->getItemID() == pair.first) {
+          itemName = item->getName();
+          break;
+        }
+      }
+      aFile << "  - " << itemName << ": " << pair.second << " sold\n";
+    }
+    aFile << "========================================\n";
+    aFile.close();
   }
 }
 
