@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include <QApplication>
 #include <QCoreApplication>
+#include <QIcon>
 #include <QtGlobal>
 
 int main(int argc, char *argv[]) {
@@ -10,6 +11,9 @@ int main(int argc, char *argv[]) {
 #endif
 
   QApplication app(argc, argv);
+
+  // Set custom application window icon
+  app.setWindowIcon(QIcon(":/resources/app_icon.png"));
 
   MainWindow window;
   window.show();

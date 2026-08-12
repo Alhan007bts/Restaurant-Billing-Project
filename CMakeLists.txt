@@ -43,6 +43,7 @@ set(SOURCES
     include/AnalyticsEngine.h
     include/DataManager.h
     src/DataManager.cpp
+    resources.qrc
 )
 
 # Create the executable
