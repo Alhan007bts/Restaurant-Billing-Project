@@ -1,0 +1,14 @@
+========================================
+          DAILY SALES REPORT            
+          Date: 2026-08-12
+========================================
+Daily Sales Total    : $0.00
+Average Bill Amount  : $0.00
+----------------------------------------
+Orders Status Summary:
+  Open Orders        : 0
+  Paid Orders        : 0
+  Cancelled Orders   : 0
+----------------------------------------
+Popular Menu Items:
+========================================

@@ -117,16 +117,55 @@ public:
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttonBox);
 
-    setStyleSheet(
-        "QDialog { background-color: #1a1a24; color: #e2e8f0; }"
-        "QLabel { color: #63b3ed; font-weight: bold; }"
-        "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox { background-color: "
-        "#262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: 4px; "
-        "color: white; }"
-        "QPushButton { background-color: #3182ce; color: white; border: none; "
-        "padding: 6px 12px; border-radius: 5px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #4299e1; }"
-        "QCheckBox { color: #e2e8f0; }");
+    bool isDark = true;
+    if (parent) {
+      QVariant prop = parent->property("isDarkTheme");
+      if (prop.isValid()) {
+        isDark = prop.toBool();
+      }
+    }
+
+    if (isDark) {
+      setStyleSheet(
+          "QDialog { background-color: #1a1a24; color: #e2e8f0; }"
+          "QLabel { color: #63b3ed; font-weight: bold; }"
+          "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox { background-color: "
+          "#262635; border: 1px solid #3f3f5a; border-radius: 5px; padding: "
+          "4px; "
+          "color: white; }"
+          "QPushButton { background-color: #3182ce; color: white; border: "
+          "none; "
+          "padding: 6px 12px; border-radius: 5px; font-weight: bold; }"
+          "QPushButton:hover { background-color: #4299e1; }"
+          "QCheckBox { color: #e2e8f0; spacing: 6px; }"
+          "QCheckBox::indicator { width: 18px; height: 18px; border: 1px solid "
+          "#3f3f5a; border-radius: 4px; background-color: #262635; }"
+          "QCheckBox::indicator:hover { border-color: #4299e1; "
+          "background-color: #3f3f5a; }"
+          "QCheckBox::indicator:checked { background-color: #3182ce; "
+          "border-color: #3182ce; image: "
+          "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAdElEQVR4nO3UwRLAEAxFUfz/P8eWSPISYmPYmHbqnlGdViIqN0e7Wv/Ac4D4OWYBxOZUgEen61NAei01C4BxBET/IUvcAtRDU+6LcQ0wDy0S1wBpAdpRCEAIes4FeBbDOAKsiCvuAcYYn9OA7XgE2B4fgKMDYNAULRQa0KAAAAAASUVORK5CYII=); }");
+    } else {
+      setStyleSheet(
+          "QDialog { background-color: #ffffff; color: #0f172a; }"
+          "QLabel { color: #2563eb; font-weight: bold; }"
+          "QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox { background-color: "
+          "#ffffff; border: 1px solid #e2e8f0; border-radius: 5px; padding: "
+          "4px; "
+          "color: #0f172a; }"
+          "QPushButton { background-color: #2563eb; color: white; border: "
+          "none; "
+          "padding: 6px 12px; border-radius: 5px; font-weight: bold; }"
+          "QPushButton:hover { background-color: #3b82f6; }"
+          "QCheckBox { color: #0f172a; spacing: 6px; }"
+          "QCheckBox::indicator { width: 18px; height: 18px; border: 1px solid "
+          "#cbd5e1; border-radius: 4px; background-color: #ffffff; }"
+          "QCheckBox::indicator:hover { border-color: #2563eb; "
+          "background-color: #f1f5f9; }"
+          "QCheckBox::indicator:checked { background-color: #2563eb; "
+          "border-color: #2563eb; image: "
+          "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAdElEQVR4nO3UwRLAEAxFUfz/P8eWSPISYmPYmHbqnlGdViIqN0e7Wv/Ac4D4OWYBxOZUgEen61NAei01C4BxBET/IUvcAtRDU+6LcQ0wDy0S1wBpAdpRCEAIes4FeBbDOAKsiCvuAcYYn9OA7XgE2B4fgKMDYNAULRQa0KAAAAAASUVORK5CYII=); }");
+    }
   }
 
   QString getName() const { return nameEdit->text(); }
@@ -1308,10 +1347,8 @@ void MainWindow::onProcessPaymentClicked() {
     if (pFile) {
       pFile << std::fixed << std::setprecision(2);
       for (const auto &p : restaurantPayments) {
-        pFile << p.getPaymentID() << "|"
-              << p.getBillID() << "|"
-              << p.getPaymentMethod() << "|"
-              << p.getAmount() << "|"
+        pFile << p.getPaymentID() << "|" << p.getBillID() << "|"
+              << p.getPaymentMethod() << "|" << p.getAmount() << "|"
               << p.getCashGiven() << "\n";
       }
       pFile.close();
@@ -1578,6 +1615,7 @@ void MainWindow::onMinusClicked() {
 
 // Application theme manager
 void MainWindow::applyTheme(bool dark) {
+  this->setProperty("isDarkTheme", dark);
   if (dark) {
     this->setStyleSheet(
         "QMainWindow { background-color: #0f172a; }"
@@ -1606,7 +1644,8 @@ void MainWindow::applyTheme(bool dark) {
         "QHeaderView { background-color: #1e293b; }"
         "QHeaderView::section { background-color: #1e293b; color: #60a5fa; "
         "padding: 8px; font-weight: bold; border: 1px solid #334155; }"
-        "QTableCornerButton::section { background-color: #1e293b; border: 1px solid #334155; }"
+        "QTableCornerButton::section { background-color: #1e293b; border: 1px "
+        "solid #334155; }"
         "QHeaderView::section:horizontal:first { border-top-left-radius: 11px; "
         "}"
         "QHeaderView::section:horizontal:last { border-top-right-radius: 11px; "
@@ -1635,10 +1674,12 @@ void MainWindow::applyTheme(bool dark) {
         "QComboBox QAbstractItemView { background-color: #1e293b; border: 1px "
         "solid #334155; selection-background-color: #334155; selection-color: "
         "#60a5fa; color: #f8fafc; }"
-        "QLineEdit, QSpinBox, QDoubleSpinBox { background-color: #1e293b; border: 1px "
+        "QLineEdit, QSpinBox, QDoubleSpinBox { background-color: #1e293b; "
+        "border: 1px "
         "solid #334155; border-radius: 8px; padding: 6px 12px; color: #f8fafc; "
         "}"
-        "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus { "
+        "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, "
+        "QComboBox:focus { "
         "border: 1px solid #60a5fa; }"
         "QSpinBox::up-button, QSpinBox::down-button, "
         "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button { width: 0px; "
@@ -1652,7 +1693,16 @@ void MainWindow::applyTheme(bool dark) {
         "#60a5fa; }"
         "QLabel#subtitleLabel { font-size: 11px; color: #94a3b8; }"
         "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: "
-        "#10b981; }");
+        "#10b981; }"
+        "QDialog { background-color: #1e293b; color: #f8fafc; }"
+        "QCheckBox { color: #f8fafc; spacing: 6px; }"
+        "QCheckBox::indicator { width: 18px; height: 18px; border: 1px solid "
+        "#334155; border-radius: 4px; background-color: #1e293b; }"
+        "QCheckBox::indicator:hover { border-color: #60a5fa; background-color: "
+        "#334155; }"
+        "QCheckBox::indicator:checked { background-color: #2563eb; "
+        "border-color: #2563eb; image: "
+        "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAdElEQVR4nO3UwRLAEAxFUfz/P8eWSPISYmPYmHbqnlGdViIqN0e7Wv/Ac4D4OWYBxOZUgEen61NAei01C4BxBET/IUvcAtRDU+6LcQ0wDy0S1wBpAdpRCEAIes4FeBbDOAKsiCvuAcYYn9OA7XgE2B4fgKMDYNAULRQa0KAAAAAASUVORK5CYII=); }");
   } else {
     this->setStyleSheet(
         "QMainWindow { background-color: #f8fafc; }"
@@ -1681,7 +1731,8 @@ void MainWindow::applyTheme(bool dark) {
         "QHeaderView { background-color: #ffffff; }"
         "QHeaderView::section { background-color: #f1f5f9; color: #1e40af; "
         "padding: 8px; font-weight: bold; border: 1px solid #e2e8f0; }"
-        "QTableCornerButton::section { background-color: #f1f5f9; border: 1px solid #e2e8f0; }"
+        "QTableCornerButton::section { background-color: #f1f5f9; border: 1px "
+        "solid #e2e8f0; }"
         "QHeaderView::section:horizontal:first { border-top-left-radius: 11px; "
         "}"
         "QHeaderView::section:horizontal:last { border-top-right-radius: 11px; "
@@ -1710,10 +1761,12 @@ void MainWindow::applyTheme(bool dark) {
         "QComboBox QAbstractItemView { background-color: #ffffff; border: 1px "
         "solid #e2e8f0; selection-background-color: #f1f5f9; selection-color: "
         "#2563eb; color: #0f172a; }"
-        "QLineEdit, QSpinBox, QDoubleSpinBox { background-color: #ffffff; border: 1px "
+        "QLineEdit, QSpinBox, QDoubleSpinBox { background-color: #ffffff; "
+        "border: 1px "
         "solid #e2e8f0; border-radius: 8px; padding: 6px 12px; color: #0f172a; "
         "}"
-        "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus { "
+        "QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, "
+        "QComboBox:focus { "
         "border: 1px solid #2563eb; }"
         "QSpinBox::up-button, QSpinBox::down-button, "
         "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button { width: 0px; "
@@ -1727,6 +1780,15 @@ void MainWindow::applyTheme(bool dark) {
         "#2563eb; }"
         "QLabel#subtitleLabel { font-size: 11px; color: #64748b; }"
         "QLabel#totalLabel { font-size: 20px; font-weight: bold; color: "
-        "#059669; }");
+        "#059669; }"
+        "QDialog { background-color: #ffffff; color: #0f172a; }"
+        "QCheckBox { color: #0f172a; spacing: 6px; }"
+        "QCheckBox::indicator { width: 18px; height: 18px; border: 1px solid "
+        "#cbd5e1; border-radius: 4px; background-color: #ffffff; }"
+        "QCheckBox::indicator:hover { border-color: #2563eb; background-color: "
+        "#f1f5f9; }"
+        "QCheckBox::indicator:checked { background-color: #2563eb; "
+        "border-color: #2563eb; image: "
+        "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAdElEQVR4nO3UwRLAEAxFUfz/P8eWSPISYmPYmHbqnlGdViIqN0e7Wv/Ac4D4OWYBxOZUgEen61NAei01C4BxBET/IUvcAtRDU+6LcQ0wDy0S1wBpAdpRCEAIes4FeBbDOAKsiCvuAcYYn9OA7XgE2B4fgKMDYNAULRQa0KAAAAAASUVORK5CYII=); }");
   }
 }
