@@ -8,22 +8,19 @@ BiteKing is a modern, cross-platform C++/Qt 6 restaurant point-of-sale (POS) and
 
 To compile and run this application, you must have CMake and Qt 6 SDK (Core, Gui, Widgets) installed.
 
----
-
 ## How to Build & Run
 
-### Option 1: In WSL / Linux Terminal (Recommended for WSL Users)
+### Option 1: In Linux / macOS / WSL Terminal
 
 1. **Install Dependencies:**
-   On Ubuntu/Debian (inside WSL):
+   On Ubuntu/Debian:
    ```bash
    sudo apt-get update
    sudo apt-get install -y cmake build-essential qt6-base-dev qt6-base-private-dev
    ```
-   *(Note: Ensure your WSL has GUI support enabled, i.e., WSLg on Windows 11/10, or an X Server running on your host machine.)*
+   *(Note: Ensure your environment has GUI support enabled, i.e., WSLg on Windows 11/10, or an active X Server.)*
 
-2. **Configure & Build:**
-   From the repository root folder:
+2. **Configure & Build (from the parent directory):**
    ```bash
    cmake -B build -S Restaurant-Billing-Project
    cmake --build build
@@ -33,6 +30,13 @@ To compile and run this application, you must have CMake and Qt 6 SDK (Core, Gui
    ```bash
    ./build/restaurant_billing_qt
    ```
+
+*Note: If you are running commands from inside the `Restaurant-Billing-Project` directory itself, use `-S .` instead:*
+```bash
+cmake -B build -S .
+cmake --build build
+./build/restaurant_billing_qt
+```
 
 ---
 
