@@ -1,0 +1,9 @@
+========================================
+            PAYMENT RECEIPT             
+========================================
+Payment ID : PAY-1001
+Bill ID    : BILL-1001
+Method     : Card
+Bill Total : $54.21
+Status     : Processed successfully
+========================================

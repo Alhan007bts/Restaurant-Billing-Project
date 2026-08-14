@@ -1,7 +1,7 @@
 # Team Responsibilities & Task Division
-**Course:** CST8219 – C++ Programming  
-**Project Title:** Restaurant Billing and Ordering System  
-**Last Updated:** 2026-07-28  
+**Course:** CST8219 – C++ Programming
+**Project Title:**  BiteKing - Restaurant Billing and Ordering System
+**Last Updated:** 2026-08-14
 
 This document outlines the final division of responsibilities for each team member, reconciled from the signed **Group Project Acknowledgement & Task Division** agreement (`Responsibilities.jpg`) and the current project `todo.md`.
 
@@ -55,7 +55,7 @@ This document outlines the final division of responsibilities for each team memb
     *   Integrate Alhan's core classes (`MenuItem`, `FoodItem`, `BeverageItem`) into the build configuration and UI.
     *   Integrate Syed's order/table classes and File I/O load/save menu features once uploaded.
     *   Set up comprehensive test cases and perform thorough system verification and leak checks (annotated as **"TESTING"**).
-*   **Current Status:** **IN PROGRESS** 🔄 (UI components/layouts completed; waiting on Syed's backend files to complete integration)
+
 
 ---
 

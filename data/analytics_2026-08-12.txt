@@ -2,13 +2,15 @@
           DAILY SALES REPORT            
           Date: 2026-08-12
 ========================================
-Daily Sales Total    : $0.00
-Average Bill Amount  : $0.00
+Daily Sales Total    : $65.22
+Average Bill Amount  : $32.61
 ----------------------------------------
 Orders Status Summary:
   Open Orders        : 0
-  Paid Orders        : 0
+  Paid Orders        : 2
   Cancelled Orders   : 0
 ----------------------------------------
 Popular Menu Items:
+  - Margherita Pizza: 3 sold
+  - Chocolate Lava Cake: 1 sold
 ========================================

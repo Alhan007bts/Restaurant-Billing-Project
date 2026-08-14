@@ -38,6 +38,7 @@ private:
   QComboBox *typeCombo;
 
   QWidget *foodWidget;
+  QComboBox *foodCategoryCombo;
   QLineEdit *cuisineEdit;
   QSpinBox *prepTimeSpinner;
   QCheckBox *spicyCheck;
@@ -70,12 +71,17 @@ public:
     // --- Food Fields ---
     foodWidget = new QWidget(this);
     QFormLayout *foodLayout = new QFormLayout(foodWidget);
+    foodCategoryCombo = new QComboBox(foodWidget);
+    foodCategoryCombo->addItem("Appetizer", "Appetizer");
+    foodCategoryCombo->addItem("Main Course", "Main Course");
+    foodCategoryCombo->addItem("Dessert", "Dessert");
     cuisineEdit = new QLineEdit(foodWidget);
     cuisineEdit->setText("Unknown");
     prepTimeSpinner = new QSpinBox(foodWidget);
     prepTimeSpinner->setRange(1, 180);
     prepTimeSpinner->setValue(10);
     spicyCheck = new QCheckBox("Is Spicy", foodWidget);
+    foodLayout->addRow("Food Category:", foodCategoryCombo);
     foodLayout->addRow("Cuisine Type:", cuisineEdit);
     foodLayout->addRow("Prep Time (min):", prepTimeSpinner);
     foodLayout->addRow(spicyCheck);
@@ -172,6 +178,7 @@ public:
   double getPrice() const { return priceSpinner->value(); }
   QString getType() const { return typeCombo->currentData().toString(); }
 
+  QString getFoodCategory() const { return foodCategoryCombo->currentData().toString(); }
   QString getCuisine() const { return cuisineEdit->text(); }
   int getPrepTime() const { return prepTimeSpinner->value(); }
   bool getIsSpicy() const { return spicyCheck->isChecked(); }
@@ -1108,7 +1115,7 @@ void MainWindow::onAddMenuItemClicked() {
     std::shared_ptr<MenuItem> newItem;
     if (categoryType == "FOOD") {
       newItem =
-          std::make_shared<FoodItem>(newID, name.toStdString(), "Main Course",
+          std::make_shared<FoodItem>(newID, name.toStdString(), dialog.getFoodCategory().toStdString(),
                                      price, dialog.getCuisine().toStdString(),
                                      dialog.getPrepTime(), dialog.getIsSpicy());
     } else {
